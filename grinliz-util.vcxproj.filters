@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="grinliz">
+      <UniqueIdentifier>{3ae3b166-d843-4020-a650-03d86b9600cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="enkits">
+      <UniqueIdentifier>{c206cf86-6e37-4260-b49d-205411b0b665}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="grinliz-util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\glconsumerproducerqueue.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\glcontainer.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\gldebug.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\glgeometry.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\glperformance.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\glrectangle.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\glserialize.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\glstringpool.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\glstringutil.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="grinliz\SpookyV2.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
+    <ClCompile Include="enkiTS\TaskScheduler.cpp">
+      <Filter>enkits</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="grinliz\glconsumerproducerqueue.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glcontainer.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\gldebug.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glgeometry.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glmath.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glperformance.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glrandom.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glrectangle.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glserialize.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glstringpool.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glstringutil.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glutil.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\SpookyV2.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="enkiTS\LockLessMultiReadPipe.h">
+      <Filter>enkits</Filter>
+    </ClInclude>
+    <ClInclude Include="enkiTS\TaskScheduler.h">
+      <Filter>enkits</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
