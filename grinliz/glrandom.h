@@ -28,6 +28,7 @@ distribution.
 
 #include "glutil.h"
 #include "SpookyV2.h"
+#include "gldebug.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -39,63 +40,23 @@ namespace grinliz {
     }
 
     inline uint64_t Hash64(const char* str) {
+        if (!str || !*str)
+            return 0;
         size_t n = strlen(str);
         return SpookyHash::Hash64(str, n, 0);
     }
 
-    inline uint32_t Hash(const void* data, int n)
+    inline uint32_t Hash32(const void* data, int n)
     {
-        uint32_t h = 0;
-        const uint8_t* p = (const uint8_t*)data;
-
-        for (; n > 0; --n, ++p)
-        {
-            h += *p;
-            h += (h << 10);
-            h ^= (h >> 6);
-        }
-
-        h += (h << 3);
-        h ^= (h >> 11);
-        h += (h << 15);
-
-        return h;
+        return SpookyHash::Hash32(data, n, 0);
     }
 
-    inline uint32_t Hash(int x, int y) {
-        int d[2] = { x, y };
-        return Hash(d, sizeof(int) * 2);
-    }
-
-    inline uint32_t Hash(const char* str) {
-        uint32_t h = 0;
-
-        /* Love this hash; regrettably for strings that
-           differ in only the last slot, it's not very good,
-           and I'm getting collisions.
-        // Modified Berstein
-        for (; *str; str++)
-        {
-            h = 33 * h ^ (uint8_t(*str));
-        }
-        return h;
-        */
-        // One at a time.
-        // This has better distribution, especially for the 
-        // important "differ by one last letter" case.
-
-        for (str; *str; ++str)
-        {
-            h += *str;
-            h += (h << 10);
-            h ^= (h >> 6);
-        }
-
-        h += (h << 3);
-        h ^= (h >> 11);
-        h += (h << 15);
-
-        return h;
+    inline uint32_t Hash32(const char* str) 
+    {
+        if (!str || !*str)
+            return 0;
+        size_t n = strlen(str);
+        return SpookyHash::Hash32(str, n, 0);
     }
 
     /**	Fast simple pseudo random number generator.
