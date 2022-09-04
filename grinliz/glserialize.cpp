@@ -24,17 +24,6 @@ void Writer::WriteIStr(const grinliz::IString& str)
 	Write(str.c_str(), str.Length());
 }
 
-void Writer::WriteCompStr(const grinliz::CompString& str)
-{
-	WriteIStr(StringPool::Intern(str));
-}
-
-grinliz::CompString Reader::ReadCompStr()
-{
-	return StringPool::InternC(ReadIStr());
-}
-
-
 grinliz::IString Reader::ReadIStr()
 {
 	grinliz::DynMemBuf buf;
@@ -60,8 +49,9 @@ std::string Reader::ReadStr()
 char* Reader::ReadCStr()
 {
 	int32_t size = ReadI32();
-	char* p = (char*) malloc(size + 1);
-	Read(p, size);
-	p[size] = 0;
-	return p;
+	cStrBuf.resize(size);
+	if (size)
+		Read(&cStrBuf[0], size);
+	cStrBuf.push_back(0);
+	return &cStrBuf[0];
 }

@@ -19,7 +19,6 @@ namespace grinliz
 		void WriteI32(int32_t t) { Write(t); }
 		void WriteStr(const std::string& str);
 		void WriteIStr(const grinliz::IString& str);
-		void WriteCompStr(const grinliz::CompString& str);
 		void WriteCStr(const char*);
 	};
 
@@ -37,8 +36,9 @@ namespace grinliz
 		int32_t ReadI32() { return Read<int32_t>(); }
 		std::string ReadStr();
 		grinliz::IString ReadIStr();
-		grinliz::CompString ReadCompStr();
 		char* ReadCStr();
+
+		std::vector<char> cStrBuf;
 	};
 
 	class MemWriterReader : public Writer, public Reader
