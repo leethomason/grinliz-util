@@ -47,6 +47,13 @@ namespace grinliz {
     public:
         PacketCPQueue() {}
 
+        void push(int id)
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+            queue.Push(id, nullptr);
+            cond.notify_one();
+        }
+
         template<class T>
         void push(int id, const T& data)
         {
