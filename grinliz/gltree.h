@@ -8,6 +8,8 @@
 namespace grinliz {
 	bool TreeTest();
 
+	// R: Rect2F or Rect3F
+	// T: some small-ish type (int, entity, id, etc.)
 	template<typename R, typename T>
 	class Tree
 	{
@@ -41,7 +43,9 @@ namespace grinliz {
 		}
 
 		// Be wary that the right side of rect is exclusive
-		// Note this is constant and thread safe!
+		// Note this is constant and thread safe, so multiple
+		// threads (each with their own std::vector) can query
+		// at the same time.
 		void Query(const R& rect, std::vector<Tree::Data>& r) const {
 			r.clear();
 			QueryRec(rect, r, m_nodes);
@@ -69,11 +73,7 @@ namespace grinliz {
 		}
 
 	private:
-		enum {
-			LEFT, RIGHT
-		};
-
-
+		enum { LEFT, RIGHT };
 		static constexpr int N_NODES = 800;
 		static constexpr int SMALL_NODE = 32;
 
@@ -97,35 +97,37 @@ namespace grinliz {
 			return nullptr;
 		}
 
-		void SplitNode(Node* node) {
-			numNodes += 1;
-			node->splitAxis = -1;	// no split by default.
-
-			if (node->count < SMALL_NODE)
-				return;
-			Node* left = Child(node, LEFT);
-			Node* right = Child(node, RIGHT);
-			if (!left || !right)
-				return;
-
+		int FindSplitAxis(const Node* node) const {
 			int splitAxis = -1;
 			float size = 0.0;
 			for (int i = 0; i < V::length(); ++i) {
-				if (node->bounds.size[i] > size) { // fixme: check numeric "can split"
+				if (node->bounds.size[i] > size) {
 					splitAxis = i;
 					size = node->bounds.size[i];
 				}
 			}
-			if (splitAxis == -1) {
-				// Leaf
-				node->splitAxis = -1;
-				return;
-			}
-			node->splitAxis = splitAxis;
+			return splitAxis;
+		}
+
+		void SplitNode(Node* node) {
+			numNodes += 1;
+			node->splitAxis = -1;	// leaf node by default
+
+			// Don't split small ones - no point,
+			// and not enough samples for the algorithms below.
+			if (node->count < SMALL_NODE) return;
+
+			Node* left = Child(node, LEFT);
+			Node* right = Child(node, RIGHT);
+			if (!left || !right) return;	// not enough nodes left.
+
+			node->splitAxis = FindSplitAxis(node);
+			if (node->Leaf()) return;
+
 			Data* start = &m_data[node->start];
 			Data* end = start + node->count;
-			// Sort the data on the splitting axis.
 
+			// Sort the data on the splitting axis.
 #if false
 			// About 6ms @10k
 			grinliz::Sort(start, node->count, [ax = node->splitAxis](const Data& a, const Data& b) {
@@ -133,19 +135,23 @@ namespace grinliz {
 				});
 #endif
 			// About 4ms @10k
-			std::sort(start, start + node->count, [ax = node->splitAxis](const Data& a, const Data& b) {
+			std::sort(start, end, [ax = node->splitAxis](const Data& a, const Data& b) {
 				return a.p[ax] < b.p[ax];
 				});
 
-			node->splitValue = start[node->count / 2].p[splitAxis];
-			float splitValue = node->splitValue;
+			// Choose the median split value. Note it is possible this 
+			// creates a pathelogical case, where there is only 1 data
+			// in a node. (Or possibly - with numerical issues - 0?). But
+			// it won't break, and this is clearly intended to work 
+			// with a distribution.
+			node->splitValue = start[node->count / 2].p[node->splitAxis];
 
 			*left = Node();
 			*right = Node();
 			Data* p = start;
 
 			left->start = node->start;
-			for (; p < end && p->p[splitAxis] < splitValue; ++p) {
+			for (; p < end && p->p[node->splitAxis] < node->splitValue; ++p) {
 				left->bounds.DoUnion(p->p);
 				left->count++;
 			}
@@ -176,7 +182,6 @@ namespace grinliz {
 				}
 			}
 		}
-
 
 		Node m_nodes[N_NODES];
 		std::vector<Data> m_data;

@@ -114,7 +114,6 @@ bool grinliz::TreeTest()
 				GLASSERT(out[i].t.y == 9);
 			}
 		}
-
 	}
 	{
 		for (int count = 0; count < 2; ++count) {
@@ -158,6 +157,7 @@ bool grinliz::TreeTest()
 
 			printf("Perf run n=%d. nNodes=%d check=%lld sizeof=%dk\n", n, tree.numNodes, checksum, int(sizeof(Tree<Rect3F, int>) / 1024));
 		}
+#if 0
 		{
 			for (int count = 0; count < 2; ++count) {
 				// Target size performance. Well, 1000 is probably fine.
@@ -201,6 +201,7 @@ bool grinliz::TreeTest()
 				printf("Perf run n=%d. nNodes=%d check=%lld sizeof=%dk\n", n, tree.numNodes, checksum, int(sizeof(Tree<Rect3F, int>) / 1024));
 			}
 		}
+#endif
 	}
 	return true;
 }
