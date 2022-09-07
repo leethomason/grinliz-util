@@ -91,8 +91,6 @@ int BSearch(const T& t, const T* mem, const T* end) {
 }
 
 /*
-	3 top level sorts:
-
 	::Sort(T* mem, int size);						uses operator <
 	::Sort(T* mem, int size, LessFunc func );		uses lambda function
 */

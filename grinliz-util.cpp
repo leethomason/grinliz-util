@@ -3,6 +3,7 @@
 #include "grinliz/glgeometry.h"
 #include "grinliz/glstringutil.h"
 #include "grinliz/glstringpool.h"
+#include "grinliz/gltree.h"
 
 int main()
 {
@@ -13,6 +14,7 @@ int main()
 	grinliz::TestIntersect();
 	grinliz::Frustum::Test();
 	grinliz::StringPool::Test();
+	grinliz::TreeTest();
 
 	printf("Tests pass.\n");
 	return 0;
