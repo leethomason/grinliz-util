@@ -2,6 +2,56 @@
 
 using namespace grinliz;
 
+template<>
+bool RectF<glm::vec3>::Intersects(const RectF<glm::vec3>& r) const {
+	if (r.pos.x + r.size.x <= pos.x)
+		return false;
+	if (r.pos.y + r.size.y <= pos.y)
+		return false;
+	if (r.pos.z + r.size.z <= pos.z)
+		return false;
+	if (r.pos.x >= pos.x + size.x)
+		return false;
+	if (r.pos.y >= pos.y + size.y)
+		return false;
+	if (r.pos.z >= pos.z + size.z)
+		return false;
+	return true;
+}
+
+template<>
+bool RectF<glm::vec2>::Intersects(const RectF<glm::vec2>& r) const {
+	if (r.pos.x + r.size.x <= pos.x)
+		return false;
+	if (r.pos.y + r.size.y <= pos.y)
+		return false;
+	if (r.pos.x >= pos.x + size.x)
+		return false;
+	if (r.pos.y >= pos.y + size.y)
+		return false;
+	return true;
+}
+
+template<>
+bool RectF<glm::vec3>::Contains(const glm::vec3& a) const {
+	if ((a.x < pos.x) || a.x >= (pos.x + size.x))
+		return false;
+	if ((a.y < pos.y) || a.y >= (pos.y + size.y))
+		return false;
+	if ((a.z < pos.z) || a.z >= (pos.z + size.z))
+		return false;
+	return true;
+}
+
+template<>
+bool RectF<glm::vec2>::Contains(const glm::vec2& a) const {
+	if ((a.x < pos.x) || a.x >= (pos.x + size.x))
+		return false;
+	if ((a.y < pos.y) || a.y >= (pos.y + size.y))
+		return false;
+	return true;
+}
+
 void grinliz::TestRect()
 {
 	{

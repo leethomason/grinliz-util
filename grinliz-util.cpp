@@ -7,6 +7,7 @@
 
 int main()
 {
+	/*
 	grinliz::ConsumerProducerQueueTest(clock());
 	grinliz::TestContainers();
 	grinliz::Tokenizer::Test();
@@ -14,6 +15,7 @@ int main()
 	grinliz::TestIntersect();
 	grinliz::Frustum::Test();
 	grinliz::StringPool::Test();
+	*/
 	grinliz::TreeTest();
 
 	printf("Tests pass.\n");
