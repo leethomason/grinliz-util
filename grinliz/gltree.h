@@ -50,6 +50,7 @@ namespace grinliz {
 		void Clear() {
 			m_data.clear();
 			m_nodes[0] = Node();
+			numNodes = 0;
 		}
 
 		// Debugging / perf
