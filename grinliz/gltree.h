@@ -37,6 +37,22 @@ namespace grinliz {
 
 		int numNodes = 0;
 
+		enum {
+			LEFT, RIGHT
+		};
+
+		const Node* Root() const { return m_nodes; }
+		const Node* Child(const Node* node, int dir) const {
+			if (node->splitAxis < 0)
+				return nullptr;
+			int myIndex = node - m_nodes;
+			int delta = myIndex + (dir + 1);
+			int index = myIndex + delta;
+			if (index < N_NODES)
+				return &m_nodes[index];
+			return nullptr;
+		}
+	
 	private:
 		static constexpr int N_NODES = 200;		// TUNE
 		static constexpr int SMALL_NODE = 16;	// probably too small...TUNE
@@ -52,11 +68,7 @@ namespace grinliz {
 		// 7      3 L   14   15
 		// ...
 
-		enum {
-			LEFT, RIGHT
-		};
-
-		Node* Child(Node* current, int dir) {
+		Node* Child(const Node* current, int dir) {
 			int myIndex = current - m_nodes;
 			int delta = myIndex + (dir + 1);
 			int index = myIndex + delta;
