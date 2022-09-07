@@ -115,7 +115,7 @@ inline void Sort( T* mem, int size, LessFunc lessfunc  )
 		}
 	}
 }
-	
+
 
 template <typename T>
 inline void Sort(T* mem, int size) {
@@ -151,49 +151,6 @@ inline int ArrayFindMax(const T* mem, int size, Func func)
 	return r;
 }
 
-
-// A memory allocated that is fast, for small objects, and can be optionally deleted.
-// Needs a "clear" at the top of each frame.
-class TempMemAllocator
-{
-public:
-	TempMemAllocator() {
-		mem = malloc(MEM_SIZE);
-	}
-	~TempMemAllocator() { free(mem); }
-	void Clear() { memUsed = 0; }
-
-	void* Alloc(size_t sz);
-	void* Realloc(void* mem, size_t sz);
-	void Free(void* mem);
-
-	bool Emtpy() const {
-		GLASSERT(memUsed || !last);
-		GLASSERT(memUsed || !nAlloc);
-		return memUsed == 0;
-	}
-
-private:
-	std::mutex memMutex;
-
-	size_t ToAllocSize(size_t s) {
-		return ((s + 15) / 16) * 16 + sizeof(Header);
-	}
-	void* LowerAlloc(size_t sz);
-
-
-	struct Header {
-		size_t nBytes;
-		size_t _pad;
-	};
-	static const size_t MEM_SIZE = 32 * 1024;
-	void* mem = 0;
-	Header* last = 0;
-	size_t memUsed = 0;
-	int nAlloc = 0;
-};
-
-
 /*	A dynamic array for blittable data. (No constructor / destructor / virtual.)
 */
 template <class T>
@@ -203,7 +160,7 @@ class CDynArray
 public:
     typedef T ElementType;
 
-    CDynArray(TempMemAllocator* _tempAllocator = 0) : size(0), capacity(CACHE), tempAllocator(_tempAllocator) {
+    CDynArray() : size(0), capacity(CACHE) {
         mem = reinterpret_cast<T*>(cache);
         GLASSERT(CACHE_SIZE * sizeof(int) >= CACHE * sizeof(T));
     }
@@ -357,13 +314,11 @@ public:
 			size_t s = capacity * sizeof(T);
 			
 			if (mem == reinterpret_cast<T*>(cache)) {
-				if (tempAllocator) mem = (T*) tempAllocator->Alloc(s);
-				else mem = (T*) malloc(s);
+				mem = (T*) malloc(s);
                 memcpy(mem, cache, size * sizeof(T));
             }
             else {
-				if (tempAllocator) mem = (T*)tempAllocator->Realloc(mem, s);
-				else mem = (T*)realloc(mem, s);
+				mem = (T*)realloc(mem, s);
             }
         }
     }
@@ -400,8 +355,7 @@ public:
 protected:
 	void FreeMemPtr() {
 		if (mem != reinterpret_cast<T*>(cache)) {
-			if (tempAllocator) tempAllocator->Free(mem);
-			else free(mem);
+			free(mem);
 		}
 		mem = 0;
 	}
@@ -409,7 +363,6 @@ protected:
     T* mem;
     int size;
     int capacity;
-	TempMemAllocator* tempAllocator;
     enum {
         CACHE_SIZE = (CACHE * sizeof(T) + sizeof(int) - 1) / sizeof(int)
     };

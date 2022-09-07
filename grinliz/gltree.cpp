@@ -114,41 +114,47 @@ bool grinliz::TreeTest()
 
 	}
 	{
-		// Target size performance. Well, 1000 is probably fine.
-		// But lets do well at 10,000
-		constexpr int N = 10'000;
-		Random rand;
+		for (int count = 0; count < 2; ++count) {
+			// Target size performance. Well, 1000 is probably fine.
+			// But lets do well at 10,000
+			constexpr int N = 10'000;
+			Random rand;
 
-		input.clear();
-		input.reserve(N);
-		for (int i = 0; i < N; ++i) {
-			glm::vec3 v = { rand.Uniform(), rand.Uniform(), rand.Uniform() };
-			input.push_back(v);
-		}
-
-		Tree<int> tree;
-		for (int i = 0; i < N; ++i) {
-			tree.Add(input[i], i);
-		}
-
-		{
-			QuickProfile profile("  sort");
-			tree.Sort();
-		}
-
-		std::vector<Tree<int>::Data> out;
-
-		int64_t checksum = 0;
-		{
-			QuickProfile profile("query");
+			input.clear();
+			input.reserve(N);
 			for (int i = 0; i < N; ++i) {
-				Rect3F bounds(rand.Uniform(), rand.Uniform(), rand.Uniform(), 0.1f, 0.1f, 0.1f);
-				tree.Query(bounds, out);
-				checksum += out.size();
+				glm::vec3 v = { rand.Uniform(), rand.Uniform(), rand.Uniform() };
+				input.push_back(v);
 			}
-		}
 
-		printf("Perf run done. check=%lld\n", checksum);
+			int n = count == 0 ? 1000 : 10'000;
+
+			printf("Perf run n=%d -------------- \n", n);
+
+			Tree<int> tree;
+			for (int i = 0; i < n; ++i) {
+				tree.Add(input[i], i);
+			}
+
+			{
+				QuickProfile profile(" sort");
+				tree.Sort();
+			}
+
+			std::vector<Tree<int>::Data> out;
+
+			int64_t checksum = 0;
+			{
+				QuickProfile profile("query");
+				for (int i = 0; i < n; ++i) {
+					Rect3F bounds(rand.Uniform(), rand.Uniform(), rand.Uniform(), 0.05f, 0.05f, 0.05f);
+					tree.Query(bounds, out);
+					checksum += out.size();
+				}
+			}
+
+			printf("Perf run n=%d. nNodes=%d check=%lld sizeof=%dk\n", n, tree.numNodes, checksum, int(sizeof(Tree<int>) / 1024));
+		}
 
 	}
 	return true;

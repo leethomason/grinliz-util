@@ -69,8 +69,8 @@ namespace grinliz {
 		};
 
 
-		static constexpr int N_NODES = 200;		// TUNE
-		static constexpr int SMALL_NODE = 16;	// probably too small...TUNE
+		static constexpr int N_NODES = 800;
+		static constexpr int SMALL_NODE = 32;
 
 		//    depth      left right
 		// 0      0		 1	  2			+1 +2	Left delta: index+1, Right: index + 2
@@ -120,18 +120,27 @@ namespace grinliz {
 			Data* start = &m_data[node->start];
 			Data* end = start + node->count;
 			// Sort the data on the splitting axis.
+
+#if false
+			// About 6ms @10k
 			grinliz::Sort(start, node->count, [ax = node->splitAxis](const Data& a, const Data& b) {
 				return a.p[ax] < b.p[ax];
 				});
+#endif
+			// About 4ms @10k
+			std::sort(start, start + node->count, [ax = node->splitAxis](const Data& a, const Data& b) {
+				return a.p[ax] < b.p[ax];
+				});
+
 			node->splitValue = start[node->count / 2].p[splitAxis];
-			float splitVal = node->splitValue;
+			float splitValue = node->splitValue;
 
 			*left = Node();
 			*right = Node();
 			Data* p = start;
 
 			left->start = node->start;
-			for (; p < end && p->p[splitAxis] < splitVal; ++p) {
+			for (; p < end && p->p[splitAxis] < splitValue; ++p) {
 				left->bounds.DoUnion(p->p);
 				left->count++;
 			}
