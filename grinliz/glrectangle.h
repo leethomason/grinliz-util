@@ -10,7 +10,7 @@ namespace grinliz
 	template<typename VEC>
 	struct RectF {
 
-		typename VEC V;
+		using Vec_t = typename VEC;
 
 		RectF() {
 			pos = VEC{ FLT_MIN };

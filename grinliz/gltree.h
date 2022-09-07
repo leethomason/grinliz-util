@@ -8,14 +8,15 @@
 namespace grinliz {
 	bool TreeTest();
 
-	template<typename T>
+	template<typename R, typename T>
 	class Tree
 	{
 		friend bool TreeTest();
+		using V = typename R::Vec_t;
 
 	public:
 		struct Data {
-			glm::vec3 p;
+			V p;
 			T t;
 		};
 
@@ -24,12 +25,12 @@ namespace grinliz {
 			int count = 0;
 			int splitAxis = -1;
 			float splitValue = 0;
-			Rect3F bounds;
+			R bounds;
 
 			bool Leaf() const { return splitAxis < 0; }
 		};
 
-		void Add(const glm::vec3& p, const T& t) {
+		void Add(const V& p, const T& t) {
 			m_nodes[0].bounds.DoUnion(p);
 			m_nodes[0].count++;
 			m_data.push_back({ p, t });
@@ -41,7 +42,7 @@ namespace grinliz {
 
 		// Be wary that the right side of rect is exclusive
 		// Note this is constant and thread safe!
-		void Query(const Rect3F& rect, std::vector<Tree::Data>& r) const {
+		void Query(const R& rect, std::vector<Tree::Data>& r) const {
 			r.clear();
 			QueryRec(rect, r, m_nodes);
 		}
@@ -108,7 +109,7 @@ namespace grinliz {
 
 			int splitAxis = -1;
 			float size = 0.0;
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < V::length(); ++i) {
 				if (node->bounds.size[i] > size) { // fixme: check numeric "can split"
 					splitAxis = i;
 					size = node->bounds.size[i];
@@ -157,7 +158,7 @@ namespace grinliz {
 			SplitNode(right);
 		}
 
-		void QueryRec(const Rect3F& rect, std::vector<Tree::Data>& r, const Node* node) const {
+		void QueryRec(const R& rect, std::vector<Tree::Data>& r, const Node* node) const {
 			const Node* left = Child(node, LEFT);
 			const Node* right = Child(node, RIGHT);
 
