@@ -147,7 +147,7 @@ bool grinliz::TreeTest()
 			{
 				QuickProfile profile("query");
 				for (int i = 0; i < n; ++i) {
-					Rect3F bounds({ rand.Uniform(), rand.Uniform(), rand.Uniform() }, { 0.1f, 0.1f, 0.1f });
+					Rect3F bounds({ rand.Uniform(), rand.Uniform(), rand.Uniform() }, { 0.05f, 0.05f, 0.05f });
 					tree.Query(bounds, out);
 					checksum += out.size();
 				}
