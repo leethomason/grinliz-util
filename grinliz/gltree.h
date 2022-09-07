@@ -25,6 +25,8 @@ namespace grinliz {
 			int splitAxis = -1;
 			float splitValue = 0;
 			Rect3F bounds;
+
+			bool Leaf() const { return splitAxis < 0; }
 		};
 
 		void Add(const glm::vec3& p, const T& t) {
@@ -38,6 +40,7 @@ namespace grinliz {
 		}
 
 		// Be wary that the right side of rect is exclusive
+		// Note this is constant and thread safe!
 		void Query(const Rect3F& rect, std::vector<Tree::Data>& r) const {
 			r.clear();
 			QueryRec(rect, r, m_nodes);
@@ -53,7 +56,7 @@ namespace grinliz {
 
 		const Node* Root() const { return m_nodes; }
 		const Node* Child(const Node* node, int dir) const {
-			if (node->splitAxis < 0)
+			if (node->Leaf())
 				return nullptr;
 			intptr_t myIndex = node - m_nodes;
 			intptr_t delta = myIndex + (dir + 1);
@@ -163,7 +166,7 @@ namespace grinliz {
 			if (right && right->bounds.Intersects(rect))
 				QueryRec(rect, r, right);
 
-			if (node->splitAxis < 0) {
+			if (node->Leaf()) {
 				for (int i = 0; i < node->count; ++i) {
 					if (rect.Contains(m_data[i + node->start].p)) {
 						r.push_back(m_data[i + node->start]);

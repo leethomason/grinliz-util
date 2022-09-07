@@ -13,7 +13,7 @@ void PrintNode(int depth, const Tree<int>::Node* node, const Tree<int>& tree)
 	const Tree<int>::Node* left = tree.Child(node, 0);
 	const Tree<int>::Node* right = tree.Child(node, 1);
 
-	printf("%3d: (%.2f,%.2f,%.2f) -  (%.2f,%.2f,%.2f) %s start=%d count=%d\n",
+	printf("%3d: (%.2f,%.2f,%.2f) -  (%.2f,%.2f,%.2f) axis=%d @ %f %s start=%d count=%d\n",
 		depth,
 		node->bounds.Lower().x,
 		node->bounds.Lower().y,
@@ -21,6 +21,8 @@ void PrintNode(int depth, const Tree<int>::Node* node, const Tree<int>& tree)
 		node->bounds.Upper().x,
 		node->bounds.Upper().y,
 		node->bounds.Upper().z,
+		node->splitAxis,
+		node->splitValue,
 		(left && right) ? "" : "LEAF: ",
 		node->start,
 		node->count);
@@ -51,7 +53,7 @@ bool grinliz::TreeTest()
 {
 	{
 		// Print out a small tree for inspection & test it.
-		constexpr int N = 100;
+		constexpr int N = 200;
 		Random rand;
 
 		input.reserve(N);

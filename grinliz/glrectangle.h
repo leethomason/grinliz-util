@@ -9,17 +9,12 @@ namespace grinliz
 {
 	template<typename VEC>
 	struct RectF {
-		/*RectF(const VEC& v0, const VEC& v1, const VEC& v2) {
-			size = VEC{ 0 };
-			pos = v0;
-			DoUnion(v1);
-			DoUnion(v2);
-		}
-		*/
+
+		typename VEC V;
 
 		RectF() {
 			pos = VEC{ FLT_MIN };
-			pos = VEC{ 0 };
+			size = VEC{ 0 };
 		}
 
 		RectF(const VEC& _origin, const VEC& _size) {
@@ -116,10 +111,12 @@ namespace grinliz
 
 		bool Intersects(const RectF<VEC>& r) const {
 			GLASSERT(false);	// should be specialized.
-			if (glm::any(glm::lessThanEqual(r.Upper(), Lower())))
-				return false;
-			if (glm::any(glm::greaterThanEqual(r.Lower(), Upper())))
-				return false;
+			for (int i = 0; i < VEC::length(); ++i) {
+				if (r.pos[i] + r.size[i] < pos[i])
+					return false;
+				if (r.pos[i] >= pos[i] + size[i])
+					return false;
+			}
 			return true;
 		}
 
