@@ -70,7 +70,7 @@ bool grinliz::TreeTest()
 		PrintNode(0, tree.Root(), tree);
 
 		std::vector<Tree<int>::Data> out;
-		Rect3F rect(0, 0, 0, 1, 1, 1);
+		Rect3F rect({ 0, 0, 0 }, { 1, 1, 1 });
 		tree.Query(rect, out);
 		GLASSERT(out.size() == N);
 	}
@@ -93,7 +93,7 @@ bool grinliz::TreeTest()
 
 		{
 			std::vector<Tree<Grid>::Data> out;
-			Rect3F r(-0.5, -0.5, -0.5, 1, 1, 1);
+			Rect3F r({ -0.5, -0.5, -0.5 }, { 1, 1, 1 });
 			tree.Query(r, out);
 			GLASSERT(out.size() == 10);
 			for (int i = 0; i < 10; ++i) {
@@ -103,7 +103,7 @@ bool grinliz::TreeTest()
 		}
 		{
 			std::vector<Tree<Grid>::Data> out;
-			Rect3F r(8.5, 8.5, -0.5, 1, 1, 1);
+			Rect3F r({ 8.5, 8.5, -0.5 }, { 1, 1, 1 });
 			tree.Query(r, out);
 			GLASSERT(out.size() == 10);
 			for (int i = 0; i < 10; ++i) {
@@ -147,7 +147,7 @@ bool grinliz::TreeTest()
 			{
 				QuickProfile profile("query");
 				for (int i = 0; i < n; ++i) {
-					Rect3F bounds(rand.Uniform(), rand.Uniform(), rand.Uniform(), 0.05f, 0.05f, 0.05f);
+					Rect3F bounds({ rand.Uniform(), rand.Uniform(), rand.Uniform() }, { 0.1f, 0.1f, 0.1f });
 					tree.Query(bounds, out);
 					checksum += out.size();
 				}

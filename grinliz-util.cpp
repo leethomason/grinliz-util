@@ -10,7 +10,7 @@ int main()
 	grinliz::ConsumerProducerQueueTest(clock());
 	grinliz::TestContainers();
 	grinliz::Tokenizer::Test();
-	grinliz::Rect3F::Test();
+	grinliz::TestRect();
 	grinliz::TestIntersect();
 	grinliz::Frustum::Test();
 	grinliz::StringPool::Test();

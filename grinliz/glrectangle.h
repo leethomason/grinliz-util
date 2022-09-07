@@ -7,125 +7,106 @@
 
 namespace grinliz 
 {
-	struct Rect3F {
-		Rect3F(const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2) {
-			size.x = size.y = size.z = 0;
+	template<typename VEC>
+	struct RectF {
+		/*RectF(const VEC& v0, const VEC& v1, const VEC& v2) {
+			size = VEC{ 0 };
 			pos = v0;
 			DoUnion(v1);
 			DoUnion(v2);
 		}
+		*/
 
-		Rect3F() {
-			pos.x = pos.y = pos.z = FLT_MIN;
-			size.x = size.y = size.z = 0;
+		RectF() {
+			pos = VEC{ FLT_MIN };
+			pos = VEC{ 0 };
 		}
 
-		Rect3F(const glm::vec3& _origin, const glm::vec3& _size) {
+		RectF(const VEC& _origin, const VEC& _size) {
 			pos = _origin;
 			size = _size;
 
-			GLASSERT(size.x >= 0);
-			GLASSERT(size.y >= 0);
-			GLASSERT(size.z >= 0);
-		}
-
-		Rect3F(float posX, float posY, float posZ, float sX, float sY, float sZ) {
-			pos.x = posX;
-			pos.y = posY;
-			pos.z = posZ;
-
-			size.x = sX;
-			size.y = sY;
-			size.z = sZ;
-
-			GLASSERT(size.x >= 0);
-			GLASSERT(size.y >= 0);
-			GLASSERT(size.z >= 0);
+			for (int i = 0; i < VEC::length(); ++i) {
+				GLASSERT(size[i] >= 0);
+			}
 		}
 
 		bool IsValid() const { return pos.x != FLT_MIN; }
 
 		void Outset(float x) {
-			pos.x -= x;
-			pos.y -= x;
-			pos.z -= x;
-			size.x += 2.0f * x;
-			size.y += 2.0f * x;
-			size.z += 2.0f * x;
+			pos.x -= VEC{ x };
+			size.x += 2.0f * VEC{ x };
 		}
 
-		void DoUnion(const glm::vec3& p) {
-			GLASSERT(size.x >= 0);
-			GLASSERT(size.y >= 0);
-			GLASSERT(size.z >= 0);
+		void DoUnion(const VEC& p) {
+			for (int i = 0; i < VEC::length(); ++i) {
+				GLASSERT(size[i] >= 0);
+			}
 
 			if (pos.x == FLT_MIN) {
 				pos = p;
 			}
 			else {
-				glm::vec3 upper = Upper();
+				VEC upper = Upper();
 				pos = glm::min(pos, p);
 				size = glm::max(upper, p) - pos;
 			}
 		}
 
-		void DoUnion(const Rect3F& r) {
+		void DoUnion(const RectF<VEC>& r) {
 			DoUnion(r.pos);
 			DoUnion(r.pos + r.size);
 		}
 
-		Rect3F Intersection(const Rect3F& r) const {
-			GLASSERT(size.x >= 0);
-			GLASSERT(size.y >= 0);
-			GLASSERT(size.z >= 0);
-
-			glm::vec3 low = glm::min(pos + size, r.pos + r.size);
-			glm::vec3 high = glm::max(pos, r.pos);
-			glm::vec3 sz = high - low;
-
-			Rect3F out;
-			if (sz.x >= 0 && sz.y >= 0 && sz.z >= 0) {
-				out.pos = low;
-				out.size = sz;
+		RectF<VEC> Intersection(const RectF<VEC>& r) const {
+			for (int i = 0; i < VEC::length; ++i) {
+				GLASSERT(size[i] >= 0);
 			}
+
+			VEC low = glm::min(pos + size, r.pos + r.size);
+			VEC high = glm::max(pos, r.pos);
+			VEC sz = high - low;
+
+			VEC out{ 0 };
+			for (int i = 0; i < VEC::length(); ++i) {
+				if (sz[i] < 0)
+					return out;
+			}
+			out.pos = low;
+			out.size = sz;
 			return out;
 		}
 
-		void DoIntersection(const Rect3F& r) {
+		void DoIntersection(const RectF<VEC>& r) {
 			*this = Intersection(r);
 		}
 
-		bool Intersects(const Rect3F& r) const {
-			for (int i = 0; i < 3; ++i) {
-				if (r.pos[i] + r.size[i] < pos[i])
-					return false;
-				if (r.pos[i] >= pos[i] + size[i])
-					return false;
+		VEC Select(int x, int y, int z) const {
+			VEC p;
+			const int arr[3] = { x, y, z };
+			for (int i = 0; i < VEC::length(); ++i) {
+				p[i] = arr[i] ? pos[i] + size[i] : pos[i];
 			}
-			return true;
-		}
-
-		glm::vec3 Select(int x, int y, int z) const {
-			glm::vec3 p;
-			p.x = x ? pos.x + size.x : pos.x;
-			p.y = y ? pos.y + size.y : pos.y;
-			p.z = z ? pos.z + size.z : pos.z;
 			return p;
 		}
 
-		const glm::vec3& Lower() const { return pos; }
-		glm::vec3 Upper() const { return pos + size; }
-		glm::vec3 Center() const { return pos + size * 0.5f; }
+		const VEC& Lower() const { return pos; }
+		VEC Upper() const { return pos + size; }
+		VEC Center() const { return pos + size * 0.5f; }
 
 		int MajorAxis() const {
-			if (size.x >= size.y && size.x >= size.z)
-				return 0;
-			if (size.y >= size.z)
-				return 1;
-			return 2;
+			int axis = 0;
+			float s = size.x;
+			for (int i = 1; i < VEC::length(); ++i) {
+				if (size[i] > s) {
+					s = size[i];
+					axis = i;
+				}
+			}
+			return axis;
 		}
 
-		void Split(int axis, Rect3F* a, Rect3F* b) const {
+		void Split(int axis, RectF<VEC>* a, RectF<VEC>* b) const {
 			a->pos = b->pos = pos;
 			a->size = b->size = size;
 				
@@ -133,27 +114,86 @@ namespace grinliz
 			b->pos[axis] = pos[axis] + a->size[axis];
 		}
 
-		bool Contains(const Rect3F& a) const {
-			for (int i = 0; i < 3; ++i) {
-				if (a.pos[i] < pos[i])
-					return false;
-				if (a.Upper()[i] > Upper()[i])
-					return false;
-			}
+		bool Intersects(const RectF<VEC>& r) const {
+			GLASSERT(false);	// should be specialized.
+			if (glm::any(glm::lessThanEqual(r.Upper(), Lower())))
+				return false;
+			if (glm::any(glm::greaterThanEqual(r.Lower(), Upper())))
+				return false;
 			return true;
 		}
 
-		bool Contains(const glm::vec3& a) const {
-			for (int i = 0; i < 3; ++i)
-				if ((a[i] < pos[i]) || (a[i] >= pos[i] + size[i]))
-					return false;
+		bool Contains(const RectF<VEC>& a) const {
+			if (glm::all(glm::greaterThanEqual(a.Lower(), Lower())) && glm::all(glm::lessThanEqual(a.Upper(), Upper())))
+				return true;
+			return false;
+		}
+
+		bool Contains(const VEC& a) const {
+			GLASSERT(false);	// should be specialized.
+			if (glm::any(glm::lessThan(a, pos)))
+				return false;
+			if (glm::any(glm::greaterThanEqual(a, pos + size)))
+				return false;
 			return true;
 		}
 
-		glm::vec3 pos;
-		glm::vec3 size;
-
-		static void Test();
+		VEC pos;
+		VEC size;
 	};
 
+	template<>
+	inline bool RectF<glm::vec3>::Intersects(const RectF<glm::vec3>& r) const {
+		if (r.pos.x + r.size.x <= pos.x)
+			return false;
+		if (r.pos.y + r.size.y <= pos.y)
+			return false;
+		if (r.pos.z + r.size.z <= pos.z)
+			return false;
+		if (r.pos.x >= pos.x + size.x)
+			return false;
+		if (r.pos.y >= pos.y + size.y)
+			return false;
+		if (r.pos.z >= pos.z + size.z)
+			return false;
+		return true;
+	}
+
+	template<>
+	inline bool RectF<glm::vec2>::Intersects(const RectF<glm::vec2>& r) const {
+		if (r.pos.x + r.size.x <= pos.x)
+			return false;
+		if (r.pos.y + r.size.y <= pos.y)
+			return false;
+		if (r.pos.x >= pos.x + size.x)
+			return false;
+		if (r.pos.y >= pos.y + size.y)
+			return false;
+		return true;
+	}
+
+	template<>
+	inline bool RectF<glm::vec3>::Contains(const glm::vec3& a) const {
+		if ((a.x < pos.x) || a.x >= (pos.x + size.x))
+			return false;
+		if ((a.y < pos.y) || a.y >= (pos.y + size.y))
+			return false;
+		if ((a.z < pos.z) || a.z >= (pos.z + size.z))
+			return false;
+		return true;
+	}
+
+	template<>
+	inline bool RectF<glm::vec2>::Contains(const glm::vec2& a) const {
+		if ((a.x < pos.x) || a.x >= (pos.x + size.x))
+			return false;
+		if ((a.y < pos.y) || a.y >= (pos.y + size.y))
+			return false;
+		return true;
+	}
+
+	using Rect3F = RectF<glm::vec3>;
+	using Rect2F = RectF<glm::vec2>;
+
+	void TestRect();
 };
