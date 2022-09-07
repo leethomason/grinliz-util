@@ -1,7 +1,10 @@
 #include "gltree.h"
 #include "glrandom.h"
+#include "glperformance.h"
 
 using namespace grinliz;
+
+std::vector<glm::vec3> input;
 
 void PrintNode(int depth, const Tree<int>::Node* node, const Tree<int>& tree)
 {
@@ -22,32 +25,131 @@ void PrintNode(int depth, const Tree<int>::Node* node, const Tree<int>& tree)
 		node->start,
 		node->count);
 
+	/*
+	* This doesn't work, because the rightmost point is not
+	* contained in the Rect3F, because of the Rect3F containment rules.
+	for (int i = 0; i < node->count; ++i) {
+		glm::vec3 p = input[i + node->start];
+		GLASSERT(node->bounds.Contains(p));
+	}
+	*/
+
 	if (left && right) {
+		GLASSERT(node->bounds.Contains(left->bounds));
+		GLASSERT(node->bounds.Contains(right->bounds));
+
 		PrintNode(depth + 1, left, tree);
 		PrintNode(depth + 1, right, tree);
 	}
 }
 
+struct Grid {
+	int x, y;
+};
 
 bool grinliz::TreeTest()
 {
-	constexpr int N = 1000;
-	Random rand;
+	{
+		// Print out a small tree for inspection & test it.
+		constexpr int N = 100;
+		Random rand;
 
-	std::vector<glm::vec3> input;
-	input.reserve(N);
-	for (int i = 0; i < N; ++i) {
-		glm::vec3 v = { rand.Uniform(), rand.Uniform(), rand.Uniform() };
-		input.push_back(v);
+		input.reserve(N);
+		for (int i = 0; i < N; ++i) {
+			glm::vec3 v = { rand.Uniform(), rand.Uniform(), rand.Uniform() };
+			input.push_back(v);
+		}
+
+		Tree<int> tree;
+		for (int i = 0; i < N; ++i) {
+			tree.Add(input[i], i);
+		}
+		tree.Sort();
+		printf("m_nodes=%d\n", tree.numNodes);
+
+		PrintNode(0, tree.Root(), tree);
+
+		std::vector<Tree<int>::Data> out;
+		Rect3F rect(0, 0, 0, 1, 1, 1);
+		tree.Query(rect, out);
+		GLASSERT(out.size() == N);
 	}
+	{
+		input.clear();
+		Tree<Grid> tree;
 
-	Tree<int> tree;
-	for (int i = 0; i < N; ++i) {
-		tree.Add(input[i], i);
+		// A bigger tree on a 10x10x10 grid
+		// Intentionally pathelogical.
+		for (int y = 0; y < 10; ++y) {
+			for (int x = 0; x < 10; ++x) {
+				for (int i = 0; i < 10; ++i) {
+					glm::vec3 v = { x, y, 0 };
+					tree.Add(v, { x, y });
+				}
+			}
+		}
+
+		tree.Sort();
+
+		{
+			std::vector<Tree<Grid>::Data> out;
+			Rect3F r(-0.5, -0.5, -0.5, 1, 1, 1);
+			tree.Query(r, out);
+			GLASSERT(out.size() == 10);
+			for (int i = 0; i < 10; ++i) {
+				GLASSERT(out[i].t.x == 0);
+				GLASSERT(out[i].t.y == 0);
+			}
+		}
+		{
+			std::vector<Tree<Grid>::Data> out;
+			Rect3F r(8.5, 8.5, -0.5, 1, 1, 1);
+			tree.Query(r, out);
+			GLASSERT(out.size() == 10);
+			for (int i = 0; i < 10; ++i) {
+				GLASSERT(out[i].t.x == 9);
+				GLASSERT(out[i].t.y == 9);
+			}
+		}
+
 	}
-	tree.Sort();
-	printf("m_nodes=%d\n", tree.numNodes);
+	{
+		// Target size performance. Well, 1000 is probably fine.
+		// But lets do well at 10,000
+		constexpr int N = 10'000;
+		Random rand;
 
-	PrintNode(0, tree.Root(), tree);
+		input.clear();
+		input.reserve(N);
+		for (int i = 0; i < N; ++i) {
+			glm::vec3 v = { rand.Uniform(), rand.Uniform(), rand.Uniform() };
+			input.push_back(v);
+		}
+
+		Tree<int> tree;
+		for (int i = 0; i < N; ++i) {
+			tree.Add(input[i], i);
+		}
+
+		{
+			QuickProfile profile("  sort");
+			tree.Sort();
+		}
+
+		std::vector<Tree<int>::Data> out;
+
+		int64_t checksum = 0;
+		{
+			QuickProfile profile("query");
+			for (int i = 0; i < N; ++i) {
+				Rect3F bounds(rand.Uniform(), rand.Uniform(), rand.Uniform(), 0.1f, 0.1f, 0.1f);
+				tree.Query(bounds, out);
+				checksum += out.size();
+			}
+		}
+
+		printf("Perf run done. check=%lld\n", checksum);
+
+	}
 	return true;
 }

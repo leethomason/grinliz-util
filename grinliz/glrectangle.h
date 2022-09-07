@@ -95,7 +95,7 @@ namespace grinliz
 			*this = Intersection(r);
 		}
 
-		bool Intersects(const Rect3F& r) {
+		bool Intersects(const Rect3F& r) const {
 			for (int i = 0; i < 3; ++i) {
 				if (r.pos[i] + r.size[i] < pos[i])
 					return false;

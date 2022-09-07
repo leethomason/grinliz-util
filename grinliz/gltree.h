@@ -6,9 +6,13 @@
 #include "glcontainer.h"	// sort: move to own header?
 
 namespace grinliz {
+	bool TreeTest();
+
 	template<typename T>
 	class Tree
 	{
+		friend bool TreeTest();
+
 	public:
 		struct Data {
 			glm::vec3 p;
@@ -32,28 +36,39 @@ namespace grinliz {
 		void Sort() {
 			SplitNode(m_nodes);
 		}
-		void Query(const glm::vec3& rectMin, const glm::vec3& rectMax, std::vector<Tree::Node>& nodes);
-		void Clear();
 
+		// Be wary that the right side of rect is exclusive
+		void Query(const Rect3F& rect, std::vector<Tree::Data>& r) const {
+			r.clear();
+			QueryRec(rect, r, m_nodes);
+		}
+
+		void Clear() {
+			m_data.clear();
+			m_nodes[0] = Node();
+		}
+
+		// Debugging / perf
 		int numNodes = 0;
-
-		enum {
-			LEFT, RIGHT
-		};
 
 		const Node* Root() const { return m_nodes; }
 		const Node* Child(const Node* node, int dir) const {
 			if (node->splitAxis < 0)
 				return nullptr;
-			int myIndex = node - m_nodes;
-			int delta = myIndex + (dir + 1);
-			int index = myIndex + delta;
+			intptr_t myIndex = node - m_nodes;
+			intptr_t delta = myIndex + (dir + 1);
+			intptr_t index = myIndex + delta;
 			if (index < N_NODES)
 				return &m_nodes[index];
 			return nullptr;
 		}
-	
+
 	private:
+		enum {
+			LEFT, RIGHT
+		};
+
+
 		static constexpr int N_NODES = 200;		// TUNE
 		static constexpr int SMALL_NODE = 16;	// probably too small...TUNE
 
@@ -69,9 +84,9 @@ namespace grinliz {
 		// ...
 
 		Node* Child(const Node* current, int dir) {
-			int myIndex = current - m_nodes;
-			int delta = myIndex + (dir + 1);
-			int index = myIndex + delta;
+			intptr_t myIndex = current - m_nodes;
+			intptr_t delta = myIndex + (dir + 1);
+			intptr_t index = myIndex + delta;
 			if (index < N_NODES)
 				return &m_nodes[index];
 			return nullptr;
@@ -120,7 +135,7 @@ namespace grinliz {
 				left->bounds.DoUnion(p->p);
 				left->count++;
 			}
-			right->start = p - &m_data[0];
+			right->start = int(p - &m_data[0]);
 			for (; p < end; ++p) {
 				right->bounds.DoUnion(p->p);
 				right->count++;
@@ -130,9 +145,26 @@ namespace grinliz {
 			SplitNode(right);
 		}
 
+		void QueryRec(const Rect3F& rect, std::vector<Tree::Data>& r, const Node* node) const {
+			const Node* left = Child(node, LEFT);
+			const Node* right = Child(node, RIGHT);
+
+			if (left && left->bounds.Intersects(rect))
+				QueryRec(rect, r, left);
+			if (right && right->bounds.Intersects(rect))
+				QueryRec(rect, r, right);
+
+			if (node->splitAxis < 0) {
+				for (int i = 0; i < node->count; ++i) {
+					if (rect.Contains(m_data[i + node->start].p)) {
+						r.push_back(m_data[i + node->start]);
+					}
+				}
+			}
+		}
+
+
 		Node m_nodes[N_NODES];
 		std::vector<Data> m_data;
 	};
-
-	bool TreeTest();
 }
