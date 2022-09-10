@@ -32,6 +32,13 @@ distribution.
 
 namespace grinliz {
 
+	using timePoint_t = std::chrono::high_resolution_clock::time_point;
+
+	inline timePoint_t Now() { return std::chrono::high_resolution_clock::now(); }
+	inline double DeltaSeconds(timePoint_t start, timePoint_t end) {
+		return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1'000'000.0;
+	}
+
     class QuickProfile
     {
     public:
