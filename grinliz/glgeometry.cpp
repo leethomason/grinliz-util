@@ -409,9 +409,9 @@ void grinliz::TestIntersect()
 		plane.d = 10.0f;
 		plane.normal = vec3(0, -1, 0);
 
-		Rect3F neg(0, 0, 0, 1, 1, 1),
-			zero(-1, -11, -1, 2, 2, 2),
-			pos(2, -20, 2, 1, 1, 1);
+		Rect3F neg({ 0, 0, 0 }, { 1, 1, 1 }),
+			zero({ -1, -11, -1 }, { 2, 2, 2 }),
+			pos({ 2, -20, 2 }, { 1, 1, 1 });
 
 		GLASSERT(IntersectPlaneAABB(plane, neg) < 0);
 		GLASSERT(IntersectPlaneAABB(plane, zero) == 0);
@@ -434,7 +434,7 @@ void grinliz::TestIntersect()
 	}
 
 	{
-		Rect3F aabb(-1, -1, -1, 2, 2, 2);
+		Rect3F aabb({ -1, -1, -1 }, { 2, 2, 2 });
 		vec3 a, b;
 
 		// Outside, plenty of length.

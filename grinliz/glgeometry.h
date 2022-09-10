@@ -4,8 +4,6 @@
 
 namespace grinliz 
 {
-	struct Rect3F;
-
 	struct Plane
 	{
 		float d;	// distance from origin

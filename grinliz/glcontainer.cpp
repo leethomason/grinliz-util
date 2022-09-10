@@ -27,73 +27,6 @@ distribution.
 
 using namespace grinliz;
 
-void* TempMemAllocator::Alloc(size_t sz)
-{
-	std::lock_guard<std::mutex> lock(memMutex);
-	return LowerAlloc(sz);
-}
-
-void* TempMemAllocator::LowerAlloc(size_t sz)
-{
-	if (sz == 0) sz = 1;
-	GLASSERT(sizeof(Header) == 16);
-	GLASSERT(!last || last->_pad == 0x17);
-	size_t allocSz = ToAllocSize(sz);
-
-	// For small scratch allocation. Really shouldn't get big.
-	// And if it does, need a more sophisticaed allocator.
-	GLASSERT(memUsed + allocSz <= MEM_SIZE);
-	last = (Header*)((uint8_t*)mem + memUsed);
-	last->nBytes = sz;
-	last->_pad = 0x17;
-	memUsed += allocSz;
-	++nAlloc;
-	return last + 1;
-}
-
-void* TempMemAllocator::Realloc(void* ptr, size_t sz)
-{
-	std::lock_guard<std::mutex> lock(memMutex);
-	if (!ptr) return LowerAlloc(sz);
-
-	Header* header = ((Header*)ptr) - 1;
-	GLASSERT(header->_pad == 0x17);
-	size_t allocSZ = ToAllocSize(sz);
-
-	if (header == last) {
-		memUsed = (uint8_t*)header + allocSZ - (uint8_t*)mem;
-		GLASSERT(memUsed <= MEM_SIZE);
-		header->nBytes = sz;
-		// Do not increase nAlloc
-		return header - 1;
-	}
-	void* target = LowerAlloc(sz);
-	// Now decrease, because we are just using as internal method.
-	--nAlloc;
-	memcpy(target, ptr, header->nBytes);
-	return target;
-}
-
-void TempMemAllocator::Free(void* ptr)
-{
-	GLASSERT(ptr);
-	if (!ptr) return;
-	std::lock_guard<std::mutex> lock(memMutex);
-	--nAlloc;
-	if (nAlloc == 0) {
-		last = 0;
-		memUsed = 0;
-	}
-
-	Header* header = ((Header*)ptr) - 1;
-	GLASSERT(header->_pad == 0x17);
-	if (header == last) {
-		memUsed = (uint8_t*)header + sizeof(Header) - (uint8_t*)mem;
-		header->nBytes = 0;
-	}
-}
-
-
 void PacketQueue::Push(int id, int size, const void* data)
 {
 	Push(id, 1, &size, &data);
@@ -489,24 +422,4 @@ void grinliz::TestContainers()
 		GLASSERT(nUsed == 5230);
 	}
 #endif
-	{
-		Random r(123);
-		TempMemAllocator temp;
-
-		void* p0 = temp.Alloc(1); memset(p0, 0xaa, 1);
-		void* p1 = temp.Alloc(16); memset(p1, 0xaa, 16);
-		void* p2 = temp.Alloc(17); memset(p2, 0xaa, 17);
-		p2 = temp.Realloc(p2, 3); memset(p2, 0xaa, 3);
-		p2 = temp.Realloc(p2, 18); memset(p2, 0xaa, 18);
-		temp.Free(p2);
-		GLASSERT(!temp.Emtpy());
-		temp.Free(p0);
-		GLASSERT(!temp.Emtpy());
-		temp.Free(p1);
-		GLASSERT(temp.Emtpy());
-
-		p0 = temp.Alloc(3);
-		temp.Free(p0);
-		GLASSERT(temp.Emtpy());
-	}
 }
