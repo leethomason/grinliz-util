@@ -200,7 +200,7 @@ public:
 
 
 // View of character data. Data needs to be constant. 
-// Not null-terminated.
+// Not null-terminated. Useful, but now replaced by std::string_view
 class StringLens
 {
 public:
@@ -236,48 +236,6 @@ private:
 	const char* end = 0;
 };
 
-
-class Tokenizer
-{
-public:
-	Tokenizer(const char* in, const char* delim=" ");
-
-	int Size() const { return nTokens; }
-	bool HasTail() const { return nTokens > 1; }
-
-	const char* First() const { return (nTokens > 0) ? buf + tokens[0] : ""; };
-	const char* Tail() const { return tail; }
-
-	bool FirstEquals(const char* b) const { return StrEqual(First(), b); }
-	bool TailEquals(const char* b) const { return StrEqual(Tail(), b); }
-
-	// 0 is first
-	const char* Get(int i) const { 
-		const char* r = i < nTokens ? buf + tokens[i] : ""; 
-		return r;
-	}
-	bool GetEquals(int i, const char* b) const { const char* p = Get(i); return StrEqual(p, b); }
-
-	static void Test();
-
-private:
-	bool InSet(char p, const char* set) const {
-		for (; *set; ++set)
-			if (*set == p) return true;
-		return false;
-	}
-
-	enum {
-		MAX_CHAR = 256,
-		MAX_TAIL = MAX_CHAR - 2,
-		MAX_NTOKENS = MAX_CHAR / 2
-	};
-
-	int nTokens = 0;
-	uint8_t tokens[MAX_NTOKENS];
-	char tail[MAX_TAIL];
-	char buf[MAX_CHAR];
-};
 
 };	// namespace grinliz
 

@@ -4,17 +4,18 @@
 #include "grinliz/glstringutil.h"
 #include "grinliz/glstringpool.h"
 #include "grinliz/gltree.h"
+#include "grinliz/glparser.h"
 
 int main()
 {
 	grinliz::ConsumerProducerQueueTest(clock());
 	grinliz::TestContainers();
-	grinliz::Tokenizer::Test();
 	grinliz::TestRect();
 	grinliz::TestIntersect();
 	grinliz::Frustum::Test();
 	grinliz::StringPool::Test();
 	grinliz::TreeTest();
+	grinliz::TestCSV();
 
 	printf("Tests pass.\n");
 	return 0;

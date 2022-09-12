@@ -107,6 +107,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\src\grinliz-util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,6 +123,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\src\grinliz-util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -137,6 +139,7 @@
     <ClCompile Include="grinliz\glcontainer.cpp" />
     <ClCompile Include="grinliz\gldebug.cpp" />
     <ClCompile Include="grinliz\glgeometry.cpp" />
+    <ClCompile Include="grinliz\glparser.cpp" />
     <ClCompile Include="grinliz\glperformance.cpp" />
     <ClCompile Include="grinliz\glrectangle.cpp" />
     <ClCompile Include="grinliz\glserialize.cpp" />
@@ -153,6 +156,7 @@
     <ClInclude Include="grinliz\gldebug.h" />
     <ClInclude Include="grinliz\glgeometry.h" />
     <ClInclude Include="grinliz\glmath.h" />
+    <ClInclude Include="grinliz\glparser.h" />
     <ClInclude Include="grinliz\glperformance.h" />
     <ClInclude Include="grinliz\glrandom.h" />
     <ClInclude Include="grinliz\glrectangle.h" />

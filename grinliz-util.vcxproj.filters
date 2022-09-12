@@ -60,6 +60,9 @@
     <ClCompile Include="grinliz\gltree.cpp">
       <Filter>grinliz</Filter>
     </ClCompile>
+    <ClCompile Include="grinliz\glparser.cpp">
+      <Filter>grinliz</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="grinliz\glconsumerproducerqueue.h">
@@ -108,6 +111,9 @@
       <Filter>enkits</Filter>
     </ClInclude>
     <ClInclude Include="grinliz\gltree.h">
+      <Filter>grinliz</Filter>
+    </ClInclude>
+    <ClInclude Include="grinliz\glparser.h">
       <Filter>grinliz</Filter>
     </ClInclude>
   </ItemGroup>
