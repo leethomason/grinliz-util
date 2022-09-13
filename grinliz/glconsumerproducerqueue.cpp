@@ -11,7 +11,7 @@ void PacketQueueMT::Push(int id, const void* data, int nBytes)
 	cond.notify_one();
 }
 
-bool IsPrime(int n) {
+static bool IsPrime(int n) {
 	if (n == 0 || n == 1 || n == 2) {
 		return false;
 	}
