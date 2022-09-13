@@ -56,6 +56,7 @@ int PacketQueue::Pop(void* target, int targetSize)
 	GLASSERT(memBuf.Size() >= sizeof(Header));
 	Header header;
 	memcpy(&header, memBuf.Mem(), sizeof(Header));
+	GLASSERT(header.dataSize >= 0);
 
 	if (header.dataSize) {
 		GLASSERT(memBuf.Size() >= sizeof(Header) + header.dataSize);
@@ -80,6 +81,7 @@ int PacketQueue::Pop(DynMemBuf* target)
 	GLASSERT(memBuf.Size() >= sizeof(Header));
 	Header header;
 	memcpy(&header, memBuf.Mem(), sizeof(Header));
+	GLASSERT(header.dataSize >= 0);
 
 	if (header.dataSize) {
 		GLASSERT(memBuf.Size() >= sizeof(Header) + header.dataSize);
@@ -196,21 +198,25 @@ void grinliz::TestContainers()
 		static const int N = 1200;
 		for (int i = 0; i < N; ++i) {
 			pq.Push(0, testA);
-			pq.Push(0, testB);
+			pq.Push(1, testB);
 		}
 		for (int i = 0; i < N/2; ++i) {
-			pq.Pop(&testA);
-			pq.Pop(&testB);
+			int idA = pq.Pop(&testA);
+			int idB = pq.Pop(&testB);
+			GLASSERT(idA == 0);
+			GLASSERT(idB == 1);
 			GLASSERT(testA.a == 17);
 			GLASSERT(testB.a == 19 && testB.b == 42.0);
 		}
 		for (int i = 0; i < N/2; ++i) {
 			pq.Push(0, testA);
-			pq.Push(0, testB);
+			pq.Push(1, testB);
 		}
 		for (int i = 0; i < N; ++i) {
-			pq.Pop(&testA);
-			pq.Pop(&testB);
+			int idA = pq.Pop(&testA);
+			int idB = pq.Pop(&testB);
+			GLASSERT(idA == 0);
+			GLASSERT(idB == 1);
 			GLASSERT(testA.a == 17);
 			GLASSERT(testB.a == 19 && testB.b == 42.0);
 		}

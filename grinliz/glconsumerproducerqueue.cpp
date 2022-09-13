@@ -24,7 +24,7 @@ static bool IsPrime(int n) {
 }
 
 PacketQueueMT testQueue;
-static const int N_PRIME = 100'000;
+static const int N_PRIME = 10'000;
 int nProducer = 1;
 
 void Produce()
