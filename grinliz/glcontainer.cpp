@@ -77,6 +77,7 @@ int PacketQueue::Peek() const
 
 int PacketQueue::Pop(DynMemBuf* target)
 {
+	target->Clear();
 	GLASSERT(memBuf.Size() >= sizeof(Header));
 	Header header;
 	memcpy(&header, memBuf.Mem(), sizeof(Header));
