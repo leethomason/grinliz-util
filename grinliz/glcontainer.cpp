@@ -27,81 +27,66 @@ distribution.
 
 using namespace grinliz;
 
+void DynMemBuf::Move(DynMemBuf* target)
+{
+	Swap(target->mem, mem);
+	Swap(target->cap, cap);
+	Swap(target->size, size);
+	size = 0;
+}
+
+void PacketQueue::Move(PacketQueue* queue)
+{
+	memBuf.Move(&queue->memBuf);
+}
+
+
 void PacketQueue::Push(int id, int size, const void* data)
 {
-	Push(id, 1, &size, &data);
-}
-
-void PacketQueue::Push(int id, int n, const int* dataSize, const void** data)
-{
 	GLASSERT(id >= 0 && id < 10000);    // sanity check
-	int size = 0;
-	for (int i = 0; i < n; ++i) {
-		size += dataSize[i];
-	}
-	int totalSize = SizeInIPtr(sizeof(Header) + size);
 
-	size_t back = vec.size();
-	vec.resize(vec.size() + totalSize);
-	
-	Header h = { id, size };
-	*((Header*)&vec[back]) = h;
-	uint8_t* dst = (uint8_t*)(&vec[back]) + sizeof(Header);
-
-	int pos = 0;
-	for (int i = 0; i < n; ++i) {
-		memcpy(dst + pos, data[i], dataSize[i]);
-		pos += dataSize[i];
-	}
+	Header header = { id, size };
+	memBuf.Add(header);
+	if (size)
+		memBuf.Add(data, size);
 }
 
-int PacketQueue::Pop(int bufferSize, int* size, void* data)
+int PacketQueue::Pop(void* target, int targetSize)
 {
-	Header* h = (Header*)(&vec[offset]);
-	GLASSERT(h->dataSize <= bufferSize);
-	memcpy(data, h + 1, h->dataSize);
-	*size = h->dataSize;
-	int totalSize = SizeInIPtr(sizeof(Header) + h->dataSize);
-	GLASSERT(h->id >= 0 && h->id < 10000);    // sanity check
+	GLASSERT(memBuf.Size() >= sizeof(Header));
+	Header header;
+	memcpy(&header, memBuf.Mem(), sizeof(Header));
 
-	offset += totalSize;
-	int id = h->id;
-	ReclaimMem();
-	return id;
+	if (header.dataSize) {
+		GLASSERT(memBuf.Size() >= sizeof(Header) + header.dataSize);
+		GLASSERT(targetSize == header.dataSize);
+		memcpy(target, (uint8_t*)memBuf.Mem() + sizeof(Header), targetSize);
+	}
+	memBuf.DeleteFront(header.dataSize + sizeof(Header));
+	return header.id;
 }
 
-int PacketQueue::Pop(DynMemBuf* dBuf)
+int PacketQueue::Peek() const
 {
-	Header* h = (Header*)(&vec[offset]);
-	dBuf->SetSize(h->dataSize);
-	memcpy(dBuf->Mem(), h + 1, h->dataSize);
-	int totalSize = SizeInIPtr(sizeof(Header) + h->dataSize);
-	GLASSERT(h->id >= 0 && h->id < 10000);    // sanity check
-
-	offset += totalSize;
-	int id = h->id;
-	ReclaimMem();
-	return id;
+	GLASSERT(memBuf.Size() >= sizeof(Header));
+	Header header;
+	memcpy(&header, memBuf.Mem(), sizeof(Header));
+	return header.id;
 }
 
-void PacketQueue::ReclaimMem()
+
+int PacketQueue::Pop(DynMemBuf* target)
 {
-	// Make sure we don't have any pointers before twiddling memory:
-	GLASSERT(offset <= (int)vec.size());
-	if (offset == vec.size()) {
-		offset = 0;
-		vec.clear();
+	GLASSERT(memBuf.Size() >= sizeof(Header));
+	Header header;
+	memcpy(&header, memBuf.Mem(), sizeof(Header));
+
+	if (header.dataSize) {
+		GLASSERT(memBuf.Size() >= sizeof(Header) + header.dataSize);
+		target->Add((uint8_t*)memBuf.Mem() + sizeof(Header), header.dataSize);
 	}
-	else if (offset >= 1024) {
-		int n = (int)vec.size() - offset;
-		/*for (int i = 0; i < n; ++i) {
-			vec[i] = vec[i + offset];
-		}
-		*/
-		memmove(&vec[0], &vec[offset], n * sizeof(intptr_t));
-		vec.resize(vec.size() - offset);
-		offset = 0;
-	}
+	memBuf.DeleteFront(header.dataSize + sizeof(Header));
+	return header.id;
 }
 
 

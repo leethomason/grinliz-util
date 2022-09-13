@@ -28,9 +28,9 @@ grinliz::IString Reader::ReadIStr()
 {
 	grinliz::DynMemBuf buf;
 	int32_t len = ReadI32();
-	buf.SetSize(len + 1);
 	Read(buf.Mem(), len);
-	*((char*)buf.Mem() + len) = 0;
+	char nt = 0;
+	buf.Add(nt);
 	return StringPool::Intern((const char*)buf.Mem());
 }
 

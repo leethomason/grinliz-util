@@ -832,12 +832,53 @@ private:
 };
 
 
+// A simple class that accumulates memory to store stuff.
+// Usefu for the packet classes and such. Memory is 
+// contiguous and only the base pointer is aligned.
 class DynMemBuf
 {
 public:
 	DynMemBuf() {}
 	~DynMemBuf() { free(mem); }
 
+	void Add(const void* src, int nBytes) {
+		int target = size;
+		SetSize(nBytes + size);
+		memcpy((uint8_t*)mem + target, src, nBytes);
+	}
+
+	void DeleteFront(int nBytes) {
+		GLASSERT(nBytes <= size);
+		memmove(mem, (uint8_t*)mem + nBytes, size - nBytes);
+		size -= nBytes;
+	}
+
+	// This is just a copy with convenient syntax
+	template<typename T>
+	void Add(const T& t) {
+		Add(&t, sizeof(t));
+	}
+
+	// Get the object if the entire buffer contains
+	// that thing.
+	template<typename T>
+	void Get(T* t) {
+		GLASSERT(size == sizeof(T));
+		memcpy(t, mem, sizeof(T));
+		size = 0;
+	}
+
+	// Move this data to target, completely replacing it,
+	// and destroying the data here.
+	void Move(DynMemBuf* target);
+
+	const void* Mem() const { return mem; }
+	void* Mem() { return mem; }
+	int Size() const { return size; }
+	bool Empty() const { return size == 0; }
+	void Clear() { size = 0; }
+
+private:
 	void SetSize(int s) {
 		if (s > cap) {
 			cap = grinliz::CeilPowerOf2(s);
@@ -845,22 +886,15 @@ public:
 		}
 		size = s;
 	}
-	void Add(const void* src, int nBytes) {
-		int target = size;
-		SetSize(nBytes + size);
-		memcpy((uint8_t*)mem + target, src, nBytes);
-	}
-
-	void* Mem() { return mem; }
-	int Size() const { return size; }
-
-private:
 	int cap = 0;
 	int size = 0;
 	void* mem = 0;
 };
 
 
+// FIFO Queue
+// Works on raw memory, not types.
+// NOT thread safe. See PacketQueueMT for that.
 class PacketQueue
 {
 public:
@@ -872,34 +906,26 @@ public:
 		Push(id, sizeof(T), &data);
 	}
 	void Push(int id, int dataSize, const void* data);
-	void Push(int id, int n, const int* size, const void** data);
 
 	template<class T>
 	int Pop(T* t) {
-		int s = 0;
-		int id = Pop(sizeof(T), &s, t);
-		GLASSERT(s == sizeof(T));
-		return id;
+		return Pop(t, sizeof(T));
 	}
-	int Pop(int bufferSize, int* size, void* data);
 	int Pop(DynMemBuf* data);
 
-	int Peek() const { return ((Header*)&vec[offset])->id; }
-	bool Empty() const { return vec.size() == offset; }
+	int Peek() const;
+	bool Empty() const { return memBuf.Empty(); }
+
+	void Move(PacketQueue* queue);
 
 private:
-
-	int SizeInIPtr(int size) {
-		return (size + sizeof(intptr_t) - 1) / sizeof(intptr_t);
-	}
-	void ReclaimMem();
+	int Pop(void* target, int size);
 
 	struct Header {
 		int id;
 		int dataSize;
 	};
-	int offset = 0;
-	std::vector<intptr_t> vec;
+	DynMemBuf memBuf;
 };
 
 template<int SIZE>

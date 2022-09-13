@@ -8,83 +8,43 @@
 
 namespace grinliz {
 
-    template<typename T>
-    class ConsumerProducerQueue
-    {
-    public:
-        ConsumerProducerQueue() {}
-
-        void push(const T& request)
-        {
-            std::unique_lock<std::mutex> lock(mutex);
-            cpq.push(request);
-            cond.notify_one();
-        }
-
-        void consume(T* request)
-        {
-            std::unique_lock<std::mutex> lock(mutex);
-            if (!cpq.empty()) {
-                *request = cpq.front();
-                cpq.pop();
-                return;
-            }
-            cond.wait(lock);
-            *request = cpq.front();
-            cpq.pop();
-        }
-
-    private:
-        std::condition_variable cond;
-        std::mutex mutex;
-        std::queue<T> cpq;
-    };
-
     void ConsumerProducerQueueTest(int seed);
 
-    class PacketCPQueue
+    // A multi-threaded queue that supports a bunch of producers
+    // sending messages to one consumer. (Actually, multi-consumers
+    // probably works too, I just can't think of a use case.)
+    // Each packet has an integer id and a payload.
+    // 
+    // push is non-blocking
+    // consume is blocking
+    //
+    class PacketQueueMT
     {
     public:
-        PacketCPQueue() {}
+        PacketQueueMT() {}
 
-        void push(int id)
-        {
-            std::unique_lock<std::mutex> lock(mutex);
-            queue.Push(id, nullptr);
-            cond.notify_one();
-        }
+        void Push(int id, const void* data, int nBytes);
+        void Push(int id) { Push(id, 0, 0); }
 
         template<class T>
-        void push(int id, const T& data)
-        {
-            GLASSERT(id >= 0 && id < 10000);    // sanity check
-            std::unique_lock<std::mutex> lock(mutex);
-            queue.Push(id, data);
-            cond.notify_one();
-        }
+        void Push(int id, const T& data) { Push(id, &data, sizeof(data)); }
 
-        void push(int id, int n, const int* size, const void** data)
+        // Reads one packet.
+        int Consume(DynMemBuf* buf)
         {
-            GLASSERT(id >= 0 && id < 10000);    // sanity check
-            std::unique_lock<std::mutex> lock(mutex);
-            queue.Push(id, n, size, data);
-            cond.notify_one();
-        }
-
-        int consume(int bufferSize, int* size, void* data)
-        {
-            std::unique_lock<std::mutex> lock(mutex);
-            if (!queue.Empty()) {
-                int id = queue.Pop(bufferSize, size, data);
-                return id;
+#if 0
+            // this seems like it should be faster...
+            if (!consumeQueue.Empty()) {
+                return consumeQueue.Pop(buf);
             }
-            cond.wait(lock);
-            int id = queue.Pop(bufferSize, size, data);
-            return id;
-        }
-
-        int consume(DynMemBuf* buf)
-        {
+            {
+                std::unique_lock<std::mutex> lock(mutex);
+                cond.wait(lock);
+                queue.Move(&consumeQueue);
+                GLASSERT(!consumeQueue.Empty());
+            }
+            return consumeQueue.Pop(buf);
+#else
             std::unique_lock<std::mutex> lock(mutex);
             if (!queue.Empty()) {
                 int id = queue.Pop(buf);
@@ -93,11 +53,18 @@ namespace grinliz {
             cond.wait(lock);
             int id = queue.Pop(buf);
             return id;
+#endif
+        }
+
+        bool Empty() {
+            std::unique_lock<std::mutex> lock(mutex);
+            return queue.Empty();
         }
 
     private:
         std::condition_variable cond;
         std::mutex mutex;
         grinliz::PacketQueue queue;
+        //PacketQueue consumeQueue;
     };
 }

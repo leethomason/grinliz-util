@@ -52,7 +52,7 @@ namespace grinliz {
             std::chrono::microseconds micro = std::chrono::duration_cast<std::chrono::microseconds>(
                     endTime - startTime
                 );
-            GLOUTPUT_REL(("%s: %d micro-seconds\n", name, (int)micro.count()));
+            GLOUTPUT_REL(("%s: %d micro %d millis\n", name, (int)micro.count(), (int)(micro.count() / 1000)));
         }
 
     private:
