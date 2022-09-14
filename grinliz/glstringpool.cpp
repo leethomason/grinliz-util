@@ -33,7 +33,7 @@ void StringPool::Destroy()
 
 int StringPool::TotalMem()
 {
-	std::lock_guard<std::mutex> guard(poolMutex);
+	std::scoped_lock<std::mutex> guard(poolMutex);
 	int mem = 0;
 	for (int i = 0; i < blocks.Size(); ++i) {
 		mem += blocks[i].memUse;
@@ -44,7 +44,7 @@ int StringPool::TotalMem()
 
 int StringPool::NumStrings()
 {
-	std::lock_guard<std::mutex> guard(poolMutex);
+	std::scoped_lock<std::mutex> guard(poolMutex);
 	int n = 0;
 	for (int i = 0; i < blocks.Size(); ++i) {
 		n += blocks[i].nStrings;
@@ -55,7 +55,7 @@ int StringPool::NumStrings()
 
 IString StringPool::Intern(const char* str)
 {
-	std::lock_guard<std::mutex> guard(poolMutex);
+	std::scoped_lock<std::mutex> guard(poolMutex);
 	const char* p = InternInner(str, 0);
 	return IString(p);
 }
@@ -109,7 +109,7 @@ const char* StringPool::InternInner(const char* str, uint64_t* hashOut)
 
 IString StringPool::Get(uint64_t h)
 {
-	std::lock_guard<std::mutex> guard(poolMutex);
+	std::scoped_lock<std::mutex> guard(poolMutex);
 	char* value = 0;
 	if (stringHash.TryGet(h, &value)) {
 		return IString(value);
@@ -124,7 +124,7 @@ bool StringPool::Has(const char* str)
 	size_t len = strlen(str);
 	uint64_t h = SpookyHash::Hash64(str, len, HASH_SEED);
 
-	std::lock_guard<std::mutex> guard(poolMutex);
+	std::scoped_lock<std::mutex> guard(poolMutex);
 	return stringHash.TryGet(h, 0);
 }
 

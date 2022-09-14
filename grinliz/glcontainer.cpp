@@ -27,17 +27,52 @@ distribution.
 
 using namespace grinliz;
 
-void DynMemBuf::Move(DynMemBuf* target)
-{
-	Swap(target->mem, mem);
-	Swap(target->cap, cap);
-	Swap(target->size, size);
-	size = 0;
+void DynMemBuf::EnsureCap(size_t s) {
+	static constexpr size_t MIN_ALLOCATE = sizeof(void*) * 4;
+
+	intptr_t size = end - front;
+	if (front + s > cap) {
+		if (front > mem) {
+			std::memmove(mem, front, end - front);
+			front = mem;
+		}
+		GLASSERT(front == mem);
+		if (mem + s > cap) {
+			size_t allocate = grinliz::CeilPowerOf2(uint32_t(s));
+			if (allocate < MIN_ALLOCATE) allocate = MIN_ALLOCATE;	// we go small but not too small
+			front = mem = (uint8_t*)realloc(mem, allocate);
+			cap = mem + allocate;
+		}
+		GLASSERT(front == mem);
+		end = front + size;
+	}
+	GLASSERT(front <= cap);
+	GLASSERT(front <= end);
+	GLASSERT(front >= mem);
 }
 
-void PacketQueue::Move(PacketQueue* queue)
+void DynMemBuf::Move(DynMemBuf& target)
 {
-	memBuf.Move(&queue->memBuf);
+	if (target.Empty()) {
+		// Then we can swap! Fun.
+		Swap(target.mem, mem);
+		Swap(target.front, front);
+		Swap(target.end, end);
+		Swap(target.cap, cap);
+	}
+	else {
+		// Just copy.
+		size_t offset = target.Size();
+		target.EnsureCap(target.Size() + this->Size());
+		target.Add(front, end - front);
+	}
+	Clear();
+}
+
+void PacketQueue::Move(PacketQueue& queue)
+{
+	memBuf.Move(queue.memBuf);
+	GLASSERT(Empty());
 }
 
 
@@ -47,8 +82,9 @@ void PacketQueue::Push(int id, int size, const void* data)
 
 	Header header = { id, size };
 	memBuf.Add(header);
-	if (size)
+	if (size) {
 		memBuf.Add(data, size);
+	}
 }
 
 int PacketQueue::Pop(void* target, int targetSize)
@@ -188,6 +224,80 @@ void grinliz::TestContainers()
 		pq.Pop(&testA);
 		GLASSERT(testA.a == 17);
 		GLASSERT(pq.Empty());
+	}
+
+	{
+		PacketQueue pq0, pq1;
+		TestA testA = { 17 };
+		TestAB testB = { 19, 42.0 };
+
+		// pq1 empty
+		pq0.Push(0, testA);
+		pq0.Push(1, testB);
+		pq0.Move(pq1);
+
+		GLASSERT(pq0.Empty());
+		pq1.Pop(&testA);
+		GLASSERT(testA.a == 17);
+		pq1.Pop(&testB);
+		GLASSERT(testB.a == 19 && testB.b == 42.0);
+		GLASSERT(pq1.Empty());
+
+		// pq1 NOT empty
+		pq0.Push(0, testA);
+		pq0.Push(1, testB);
+		pq1.Push(0, testA);
+		pq0.Move(pq1);
+
+		GLASSERT(pq0.Empty());
+
+		pq1.Pop(&testA);
+		GLASSERT(testA.a == 17);
+		pq1.Pop(&testA);
+		GLASSERT(testA.a == 17);
+		pq1.Pop(&testB);
+		GLASSERT(testB.a == 19 && testB.b == 42.0);
+		GLASSERT(pq1.Empty());
+	}
+
+	{
+		PacketQueue pq;
+		TestA testA = { 17 };
+		TestAB testB = { 19, 42.0 };
+
+		pq.Push(0, testA);
+		pq.Push(0, testA);
+		pq.Push(0, testA);
+
+		pq.Pop(&testA);
+		GLASSERT(testA.a == 17);
+		pq.Push(1, testB);
+		pq.Push(1, testB);
+		pq.Pop(&testA);
+		GLASSERT(testA.a == 17);
+		pq.Pop(&testA);
+		GLASSERT(testA.a == 17);
+		pq.Pop(&testB);
+		GLASSERT(testB.a == 19 && testB.b == 42.0);
+		pq.Pop(&testB);
+		GLASSERT(testB.a == 19 && testB.b == 42.0);
+		GLASSERT(pq.Empty());
+	}
+
+	{
+		PacketQueue pq0, pq1;
+		TestA testA = { 17 };
+		TestAB testB = { 19, 42.0 };
+
+		pq0.Push(0, testA);
+		pq1.Push(1, testB);
+
+		pq0.Move(pq1);
+		GLASSERT(pq0.Empty());
+		pq1.Pop(&testB);
+		GLASSERT(testB.a == 19 && testB.b == 42.0);
+		pq1.Pop(&testA);
+		GLASSERT(testA.a == 17);
 	}
 
 	// PacketQueue stress

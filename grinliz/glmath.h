@@ -136,6 +136,10 @@ inline bool IsPrime(int n) {
 	return true;
 }
 
+inline bool IsOdd(int n) {
+	return (n & 1) == 1;
+}
+
 };	// namespace grinliz
 
 #endif

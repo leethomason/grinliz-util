@@ -841,16 +841,26 @@ public:
 	DynMemBuf() {}
 	~DynMemBuf() { free(mem); }
 
-	void Add(const void* src, int nBytes) {
-		int target = size;
-		SetSize(nBytes + size);
-		memcpy((uint8_t*)mem + target, src, nBytes);
+	void Add(const void* src, size_t nBytes) {
+		EnsureCap(Size() + nBytes);
+		memcpy(end, src, nBytes);
+		end += nBytes;
+
+		GLASSERT(front <= cap);
+		GLASSERT(front <= end);
+		GLASSERT(front >= mem);
 	}
 
-	void DeleteFront(int nBytes) {
-		GLASSERT(nBytes <= size);
-		memmove(mem, (uint8_t*)mem + nBytes, size - nBytes);
-		size -= nBytes;
+	void DeleteFront(size_t nBytes) {
+		GLASSERT(nBytes <= size_t(end - front));
+		front += nBytes;
+		if (front == end) {
+			front = mem;
+			end = mem;
+		}
+		GLASSERT(front <= cap);
+		GLASSERT(front <= end);
+		GLASSERT(front >= mem);
 	}
 
 	// This is just a copy with convenient syntax
@@ -859,36 +869,30 @@ public:
 		Add(&t, sizeof(t));
 	}
 
-	// Get the object if the entire buffer contains
-	// that thing.
 	template<typename T>
 	void Get(T* t) {
-		GLASSERT(size == sizeof(T));
-		memcpy(t, mem, sizeof(T));
-		size = 0;
+		GLASSERT((end - front) >= sizeof(T));
+		memcpy(t, front, sizeof(T));
+		DeleteFront(sizeof(T));
 	}
 
-	// Move this data to target, completely replacing it,
-	// and destroying the data here.
-	void Move(DynMemBuf* target);
+	// Move all the data from `this` and append to `target`
+	// 'this' will be empty after move.
+	void Move(DynMemBuf& target);
 
-	const void* Mem() const { return mem; }
-	void* Mem() { return mem; }
-	int Size() const { return size; }
-	bool Empty() const { return size == 0; }
-	void Clear() { size = 0; }
+	const void* Mem() const { return front; }
+	void* Mem() { return front; }
+
+	size_t Size() const { return end - front; }
+	bool Empty() const { return front == end; }
+	void Clear() { front = mem; end = mem; }
 
 private:
-	void SetSize(int s) {
-		if (s > cap) {
-			cap = grinliz::CeilPowerOf2(s);
-			mem = realloc(mem, cap);
-		}
-		size = s;
-	}
-	int cap = 0;
-	int size = 0;
-	void* mem = 0;
+	void EnsureCap(size_t s);
+	uint8_t* mem = 0;		// origin of memory, returned by malloc/realloc
+	uint8_t* front = 0;		// where the beginning of data is. DeleteFront may move this past 'mem'
+	uint8_t* end = 0;		// end of memory
+	uint8_t* cap = 0;		// capacity of memory
 };
 
 
@@ -916,7 +920,9 @@ public:
 	int Peek() const;
 	bool Empty() const { return memBuf.Empty(); }
 
-	void Move(PacketQueue* queue);
+	// Move 'this' to 'queue'.
+	// 'this' will be empty after move.
+	void Move(PacketQueue& queue);
 
 private:
 	int Pop(void* target, int size);

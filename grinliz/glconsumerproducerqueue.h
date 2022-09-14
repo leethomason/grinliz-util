@@ -29,45 +29,36 @@ namespace grinliz {
         template<class T>
         void Push(int id, const T& data) { Push(id, &data, sizeof(data)); }
 
+        // Moves the 'in' queue to be sent, empties the 'in' queue.
+        void PushMove(PacketQueue& in);
+
         // Reads one packet.
         int Consume(DynMemBuf* buf)
         {
-            // Upper approach:  100
-            // Lower         :  100
-            // So not the blocker. Lower is simpler.
-#if 0
-            if (!consumeQueue.Empty()) {
-                return consumeQueue.Pop(buf);
-            }
-            {
+            // Try to use the cache w/o a lock. Failing that,
+            // copy everything from the input queue to the cache.
+            if (cache.Empty()) {
                 std::unique_lock<std::mutex> lock(mutex);
                 if (queue.Empty())
                     cond.wait(lock);
-                queue.Move(&consumeQueue);
-                GLASSERT(!consumeQueue.Empty());
+                queue.Move(cache);
+                GLASSERT(!cache.Empty());
             }
-            return consumeQueue.Pop(buf);
-#else
-            std::unique_lock<std::mutex> lock(mutex);
-            if (!queue.Empty()) {
-                int id = queue.Pop(buf);
-                return id;
-            }
-            cond.wait(lock);
-            int id = queue.Pop(buf);
-            return id;
-#endif
+            return cache.Pop(buf);
         }
 
         bool Empty() {
-            std::unique_lock<std::mutex> lock(mutex);
-            return queue.Empty();
+            if (cache.Empty()) {
+                std::unique_lock<std::mutex> lock(mutex);
+                return queue.Empty();
+            }
+            return false;
         }
 
     private:
         std::condition_variable cond;
         std::mutex mutex;
         grinliz::PacketQueue queue;
-        //PacketQueue consumeQueue;
+        PacketQueue cache;
     };
 }
