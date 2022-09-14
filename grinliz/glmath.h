@@ -26,6 +26,8 @@ distribution.
 #ifndef GRINLIZ_MATH_INCLUDED
 #define GRINLIZ_MATH_INCLUDED
 
+#include <glm/glm.hpp>
+
 #include "gldebug.h"
 #include "glutil.h"
 #include <math.h>
@@ -120,6 +122,18 @@ T Sign( T x ) {
 	if ( x > 0 ) return 1;
 	if ( x < 0 ) return -1;
 	return 0;
+}
+
+inline bool IsPrime(int n) {
+	if (n == 0 || n == 1 || n == 2) {
+		return false;
+	}
+	for (int i = 2; i <= n / 2; ++i) {
+		if (n % i == 0) {
+			return false;
+		}
+	}
+	return true;
 }
 
 };	// namespace grinliz

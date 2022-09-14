@@ -32,14 +32,17 @@ namespace grinliz {
         // Reads one packet.
         int Consume(DynMemBuf* buf)
         {
+            // Upper approach:  100
+            // Lower         :  100
+            // So not the blocker. Lower is simpler.
 #if 0
-            // this seems like it should be faster...
             if (!consumeQueue.Empty()) {
                 return consumeQueue.Pop(buf);
             }
             {
                 std::unique_lock<std::mutex> lock(mutex);
-                cond.wait(lock);
+                if (queue.Empty())
+                    cond.wait(lock);
                 queue.Move(&consumeQueue);
                 GLASSERT(!consumeQueue.Empty());
             }

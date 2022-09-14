@@ -38,6 +38,9 @@ namespace grinliz {
 	inline double DeltaSeconds(timePoint_t start, timePoint_t end) {
 		return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1'000'000.0;
 	}
+	inline int64_t DeltaMillis(timePoint_t start, timePoint_t end) {
+		return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	}
 
     class QuickProfile
     {
