@@ -14,6 +14,7 @@ void PacketQueueMT::Push(int id, const void* data, int nBytes)
 
 void PacketQueueMT::PushMove(PacketQueue& in)
 {
+	GLASSERT(!in.Empty());
 	std::unique_lock<std::mutex> lock(mutex);
 	in.Move(queue);
 	cond.notify_one();

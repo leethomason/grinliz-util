@@ -39,8 +39,11 @@ namespace grinliz {
             // copy everything from the input queue to the cache.
             if (cache.Empty()) {
                 std::unique_lock<std::mutex> lock(mutex);
-                if (queue.Empty())
+                // Something could have filled the cache while
+                // we got the lock. Check again:
+                if (cache.Empty() && queue.Empty())
                     cond.wait(lock);
+                GLASSERT(!queue.Empty());
                 queue.Move(cache);
                 GLASSERT(!cache.Empty());
             }

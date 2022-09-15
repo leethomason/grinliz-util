@@ -924,6 +924,10 @@ public:
 	// 'this' will be empty after move.
 	void Move(PacketQueue& queue);
 
+	size_t Size() const {
+		return memBuf.Size();
+	}
+
 private:
 	int Pop(void* target, int size);
 
