@@ -142,4 +142,10 @@ inline bool IsOdd(int n) {
 
 };	// namespace grinliz
 
+inline float Fractf(float f)
+{
+	float intPart;
+	return modf(f, &intPart);
+}
+
 #endif
