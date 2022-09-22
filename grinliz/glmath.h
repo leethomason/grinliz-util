@@ -94,6 +94,14 @@ bool Equal(T x, T y, T error) {
     return fabs(x - y) < error;
 }
 
+inline bool Equal(const glm::vec2& a, const glm::vec2& b, float err) {
+	for (int i = 0; i < 2; ++i) {
+		if (fabs(a[i] - b[i]) > err)
+			return false;
+	}
+	return true;
+}
+
 inline bool Equal(const glm::vec3& a, const glm::vec3& b, float err) {
 	for (int i = 0; i < 3; ++i) {
 		if (fabs(a[i] - b[i]) > err)
