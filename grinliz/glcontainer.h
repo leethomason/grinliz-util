@@ -34,6 +34,7 @@ distribution.
 
 #include "gldebug.h"
 #include "glutil.h"
+#include "SpookyV2.h"
 
 namespace grinliz
 {
@@ -578,7 +579,9 @@ class IntHashTable
 {
 public:
 	IntHashTable() {}
-	~IntHashTable() { Clear(); }
+	~IntHashTable() { 
+		Free(); 
+	}
 
 	// Adds a key/value pair. What about duplicates? Duplicate
 	// keys aren't allowed. An old value will be deleted and replaced.
@@ -633,14 +636,20 @@ public:
 	}
 
 	void Clear() {
+		for (int i = 0; i < nBuckets; ++i)
+			buckets[i].key = UNUSED;
+
+		nItems = 0;
+		nDeleted = 0;
+	}
+
+	void Free() {
 		free(buckets);
 		buckets = 0;
 		nBuckets = 0;
 		nItems = 0;
 		nDeleted = 0;
-		nBits = 0;
 	}
-
 
 	bool TryGet(K key, V* value) const {
 		int index = FindIndex(key);
@@ -679,6 +688,8 @@ public:
 	
 	int NumBuckets() const { return nBuckets; } // testing
 	int NumDeleted() const { return nDeleted; }	// testing
+	size_t MemoryInUse() const { return nBuckets * sizeof(Bucket); }
+
 	void Analyze(int* nDeleted, int* nUnused, int* nUsed) const 
 	{
 		*nDeleted = 0;
@@ -733,20 +744,8 @@ private:
 	// not really be a hash so much as spreading
 	// out the values.
 	uint32_t Hash(K k) const {
-		GLASSERT(nBits);
-		GLASSERT(nBits < 32);	// WAT. Not made to be that big. Need to test for 32bit+ sizes.
-
-		const uint32_t mask = (1 << nBits) - 1;
-		uint32_t hash = 0;
-		int b = sizeof(K) * 8;
-		
-		while (b > 0) {
-			hash ^= k & mask;
-			k >>= nBits;
-			b -= nBits;
-		}
-		GLASSERT(hash < (uint32_t)nBuckets);
-		return hash;
+		//return SpookyHash::Hash32(&k, sizeof(k), 37) % nBuckets;
+		return k % nBuckets;
 	}
 
 	void EnsureCap() {
@@ -755,7 +754,6 @@ private:
 			GLASSERT(buckets == 0);
 			nItems = nDeleted = 0;
 			nBuckets = MIN_BUCKETS;
-			nBits = LogBase2(nBuckets);
 			buckets = (Bucket*)malloc(sizeof(Bucket) * nBuckets);
 			memset(buckets, 0, sizeof(Bucket) * nBuckets);
 			for (int i = 0; i < nBuckets; ++i)
@@ -775,7 +773,6 @@ private:
 				GLASSERT(n > nBuckets);
 			}
 			nBuckets = n;
-			nBits = LogBase2(nBuckets);
 			nItems = 0;
 			nDeleted = 0;
 			buckets = (Bucket*)malloc(sizeof(Bucket) * nBuckets);
@@ -815,7 +812,6 @@ private:
 	int nBuckets = 0;
 	int nItems = 0;
 	int nDeleted = 0;
-	int nBits = 0;
 	bool reallocating = false;
 
 	static constexpr K UNUSED = (std::numeric_limits<K>::max)() - 1;

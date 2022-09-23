@@ -26,6 +26,7 @@
 // slower than MD5.
 //
 
+#pragma once
 #include <stddef.h>
 
 #ifdef _MSC_VER

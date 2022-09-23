@@ -28,7 +28,7 @@ void StringPool::Destroy()
 		free(blocks[i].mem);
 	}
 	blocks.FreeMem();
-	stringHash.Clear();
+	stringHash.Free();
 }
 
 int StringPool::TotalMem()
