@@ -1054,6 +1054,8 @@ public:
 		return true;
 	}
 
+	void Clear() { arr.Clear(); }
+
 private:
 	void UpHeap(int k) {
 		T v = arr[k];
