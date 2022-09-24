@@ -176,6 +176,15 @@ namespace grinliz
 			}
 		}
 
+		bool operator==(const RectI<VEC>& rhs) const {
+			return this->IsValid()
+				&& rhs.IsValid()
+				&& (this->pos == rhs.pos)
+				&& (this->size == rhs.size);
+		}
+
+		bool operator!=(const RectI<VEC>& rhs) const { return !(*this == rhs); }
+
 		bool IsValid() const { return pos.x != INT_MIN; }
 
 		void Outset(float x) {
