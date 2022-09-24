@@ -29,8 +29,8 @@ namespace grinliz
 		bool IsValid() const { return pos.x != FLT_MIN; }
 
 		void Outset(float x) {
-			pos.x -= VEC{ x };
-			size.x += 2.0f * VEC{ x };
+			pos -= VEC{ x };
+			size += 2.0f * VEC{ x };
 		}
 
 		void DoUnion(const VEC& p) {
