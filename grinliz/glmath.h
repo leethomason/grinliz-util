@@ -91,7 +91,7 @@ inline float NormalizeAngle(float theta)
 
 template<typename T>
 bool Equal(T x, T y, T error) {
-    return fabs(x - y) < error;
+    return fabs(x - y) <= error;
 }
 
 inline bool Equal(const glm::vec2& a, const glm::vec2& b, float err) {
