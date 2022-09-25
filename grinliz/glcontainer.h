@@ -557,22 +557,6 @@ private:
 };
 
 
-class CompCharPtr {
-public:
-	template <class T>
-	static uint32_t Hash( T& _p) {
-		const unsigned char* p = (const unsigned char*)_p;
-        uint32_t hash = 2166136261UL;
-		for( ; *p; ++p ) {
-			hash ^= *p;
-			hash *= 16777619;
-		}
-		return hash;
-	}
-	template <class T>
-	static bool Equal( T& v0, T& v1 ) { return strcmp( v0, v1 ) == 0; }
-};
-
 // Simple HashTable for blittable data. (No constructor / destructor / virtual.)
 template <class K, class V>
 class IntHashTable
@@ -602,7 +586,7 @@ public:
 		else {
 			uint32_t hash = Hash(key);
 			while (true) {
-				hash = hash & (nBuckets - 1);
+				if (hash == nBuckets) hash = 0;
 				K state = buckets[hash].key;
 				if (state == UNUSED || state == DELETED) {
 					if (state == DELETED)
@@ -745,11 +729,11 @@ private:
 	// out the values.
 	uint32_t Hash(K k) const {
 		//return SpookyHash::Hash32(&k, sizeof(k), 37) % nBuckets;
-		return k % nBuckets;
+		return uint64_t(k) % nBuckets;
 	}
 
 	void EnsureCap() {
-		static const int MIN_BUCKETS = 64;
+		static const int MIN_BUCKETS = 63;
 		if (!nBuckets) {
 			GLASSERT(buckets == 0);
 			nItems = nDeleted = 0;
@@ -769,7 +753,9 @@ private:
 			int n = nBuckets;
 			// If mostly 'deleted', don't expand, just re-distribute.
 			if (nDeleted < nItems) {
-				n = CeilPowerOf2(Max((nItems + nDeleted) * 2, MIN_BUCKETS));
+				// Powers of 2 tend to conflict. The additional term 
+				// is used to try to get something odd or prime.
+				n = CeilPowerOf2(Max((nItems + nDeleted) * 2, MIN_BUCKETS)) - 3;
 				GLASSERT(n > nBuckets);
 			}
 			nBuckets = n;
@@ -795,7 +781,8 @@ private:
 
 		uint32_t hash = Hash(key);
 		while (true) {
-			hash = hash & (nBuckets - 1);
+			if (hash == nBuckets) 
+				hash = 0;
 			if (!UnusedOrDeleted(buckets[hash].key)) {
 				if (buckets[hash].key == key) {
 					return hash;
