@@ -18,8 +18,8 @@ namespace grinliz {
 
 	public:
 		struct Data {
-			V p;
-			T t;
+			V pos;
+			T key;
 		};
 
 		struct Node {
@@ -136,7 +136,7 @@ namespace grinliz {
 #endif
 			// About 4ms @10k
 			std::sort(start, end, [ax = node->splitAxis](const Data& a, const Data& b) {
-				return a.p[ax] < b.p[ax];
+				return a.pos[ax] < b.pos[ax];
 				});
 
 			// Choose the median split value. Note it is possible this 
@@ -144,20 +144,20 @@ namespace grinliz {
 			// in a node. (Or possibly - with numerical issues - 0?). But
 			// it won't break, and this is clearly intended to work 
 			// with a distribution.
-			node->splitValue = start[node->count / 2].p[node->splitAxis];
+			node->splitValue = start[node->count / 2].pos[node->splitAxis];
 
 			*left = Node();
 			*right = Node();
 			Data* p = start;
 
 			left->start = node->start;
-			for (; p < end && p->p[node->splitAxis] < node->splitValue; ++p) {
-				left->bounds.DoUnion(p->p);
+			for (; p < end && p->pos[node->splitAxis] < node->splitValue; ++p) {
+				left->bounds.DoUnion(p->pos);
 				left->count++;
 			}
 			right->start = int(p - &m_data[0]);
 			for (; p < end; ++p) {
-				right->bounds.DoUnion(p->p);
+				right->bounds.DoUnion(p->pos);
 				right->count++;
 			}
 			
@@ -176,7 +176,7 @@ namespace grinliz {
 
 			if (node->Leaf()) {
 				for (int i = 0; i < node->count; ++i) {
-					if (rect.Contains(m_data[i + node->start].p)) {
+					if (rect.Contains(m_data[i + node->start].pos)) {
 						r.push_back(m_data[i + node->start]);
 					}
 				}

@@ -100,8 +100,8 @@ bool grinliz::TreeTest()
 			tree.Query(r, out);
 			GLASSERT(out.size() == 10);
 			for (int i = 0; i < 10; ++i) {
-				GLASSERT(out[i].t.x == 0);
-				GLASSERT(out[i].t.y == 0);
+				GLASSERT(out[i].key.x == 0);
+				GLASSERT(out[i].key.y == 0);
 			}
 		}
 		{
@@ -110,8 +110,8 @@ bool grinliz::TreeTest()
 			tree.Query(r, out);
 			GLASSERT(out.size() == 10);
 			for (int i = 0; i < 10; ++i) {
-				GLASSERT(out[i].t.x == 9);
-				GLASSERT(out[i].t.y == 9);
+				GLASSERT(out[i].key.x == 9);
+				GLASSERT(out[i].key.y == 9);
 			}
 		}
 	}
