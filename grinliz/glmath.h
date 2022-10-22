@@ -34,19 +34,19 @@ distribution.
 
 namespace grinliz
 {
-const float PI = 3.1415926535897932384626433832795f;
-const float TWO_PI = 2.0f*3.1415926535897932384626433832795f;
-const float TAU = TWO_PI;
-const double PI_D = 3.1415926535897932384626433832795;
-const double TWO_PI_D = 2.0*3.1415926535897932384626433832795;
+constexpr float PI = 3.1415926535897932384626433832795f;
+constexpr float TWO_PI = 2.0f*3.1415926535897932384626433832795f;
+constexpr float TAU = TWO_PI;
+constexpr double PI_D = 3.1415926535897932384626433832795;
+constexpr double TWO_PI_D = 2.0*3.1415926535897932384626433832795;
 
-const float RAD_TO_DEG = (float)( 360.0 / ( 2.0 * PI ) );
-const float DEG_TO_RAD = (float)( ( 2.0 * PI ) / 360.0f );
-const double RAD_TO_DEG_D = ( 360.0 / ( 2.0 * PI_D ) );
-const double DEG_TO_RAD_D = ( ( 2.0 * PI_D ) / 360.0 );
-const float SQRT2 = 1.4142135623730950488016887242097f;
-const float SQRT2OVER2 = float( 1.4142135623730950488016887242097 / 2.0 );
-const float INV_SQRT2 = 0.70710678118654752440084436210485f;
+constexpr float RAD_TO_DEG = (float)( 360.0 / ( 2.0 * PI ) );
+constexpr float DEG_TO_RAD = (float)( ( 2.0 * PI ) / 360.0f );
+constexpr double RAD_TO_DEG_D = ( 360.0 / ( 2.0 * PI_D ) );
+constexpr double DEG_TO_RAD_D = ( ( 2.0 * PI_D ) / 360.0 );
+constexpr float SQRT2 = 1.4142135623730950488016887242097f;
+constexpr float SQRT2OVER2 = float( 1.4142135623730950488016887242097 / 2.0 );
+constexpr float INV_SQRT2 = 0.70710678118654752440084436210485f;
 
 
 inline float ToDegree( float radian ) { return radian * RAD_TO_DEG; }
