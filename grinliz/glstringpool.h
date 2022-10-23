@@ -40,6 +40,8 @@ public:
 	bool operator!=(const IString& rhs) const { return !(rhs == *this); }
 	bool operator!=(const char* p) const { return !(*this == p); }
 
+	bool operator<(const IString& rhs) { return strcmp(str, rhs.str) < 0; }
+
 	int Length() const {
 		return *(str - 2) * 256 + *(str - 1);
 	}
