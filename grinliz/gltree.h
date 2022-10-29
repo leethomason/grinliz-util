@@ -5,6 +5,8 @@
 #include "glrectangle.h"
 #include "glcontainer.h"	// sort: move to own header?
 
+#define USE_PARTITION() 1
+
 namespace grinliz {
 	bool TreeTest();
 
@@ -128,6 +130,22 @@ namespace grinliz {
 			Data* end = start + node->count;
 
 			// Sort the data on the splitting axis.
+#if USE_PARTITION()
+			node->splitValue = node->bounds.Center()[node->splitAxis];
+			
+			/* Using the mean - over the center - actually slows down the Query (??)
+			double total = 0;
+			for (const Data* d = start; d < end; ++d) {
+				total += d->pos[node->splitAxis];
+			}
+			double ave = total / (end - start);
+			node->splitValue = (float)ave;
+			*/
+			std::partition(start, end, [ax = node->splitAxis, v = node->splitValue](const Data& a) {
+				return a.pos[ax] < v;
+				});
+
+#else
 #if false
 			// About 6ms @10k
 			grinliz::Sort(start, node->count, [ax = node->splitAxis](const Data& a, const Data& b) {
@@ -145,7 +163,7 @@ namespace grinliz {
 			// it won't break, and this is clearly intended to work 
 			// with a distribution.
 			node->splitValue = start[node->count / 2].pos[node->splitAxis];
-
+#endif
 			*left = Node();
 			*right = Node();
 			Data* p = start;
