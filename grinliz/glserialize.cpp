@@ -46,7 +46,7 @@ std::string Reader::ReadStr()
 	return str;
 }
 
-char* Reader::ReadCStr()
+const char* Reader::ReadCStr()
 {
 	int32_t size = ReadI32();
 	cStrBuf.resize(size);

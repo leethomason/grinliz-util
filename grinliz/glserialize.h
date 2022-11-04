@@ -36,7 +36,7 @@ namespace grinliz
 		int32_t ReadI32() { return Read<int32_t>(); }
 		std::string ReadStr();
 		grinliz::IString ReadIStr();
-		char* ReadCStr();
+		const char* ReadCStr();
 
 		std::vector<char> cStrBuf;
 	};
