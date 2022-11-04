@@ -207,31 +207,28 @@ namespace grinliz
 			}
 		}
 
-		void DoUnion(const RectF<VEC>& r) {
+		void DoUnion(const RectI<VEC>& r) {
 			DoUnion(r.pos);
 			DoUnion(r.pos + r.size);
 		}
 
-		RectF<VEC> Intersection(const RectF<VEC>& r) const {
-			for (int i = 0; i < VEC::length; ++i) {
+		RectI<VEC> Intersection(const RectI<VEC>& r) const {
+			for (int i = 0; i < VEC::length(); ++i) {
 				GLASSERT(size[i] >= 0);
 			}
 
-			VEC low = glm::min(pos + size, r.pos + r.size);
-			VEC high = glm::max(pos, r.pos);
+			VEC low = glm::max(pos, r.pos);
+			VEC high = glm::min(Upper(), r.Upper());
 			VEC sz = high - low;
 
-			VEC out{ 0 };
 			for (int i = 0; i < VEC::length(); ++i) {
 				if (sz[i] < 0)
-					return out;
+					return RectI<VEC>();
 			}
-			out.pos = low;
-			out.size = sz;
-			return out;
+			return { low, sz };
 		}
 
-		void DoIntersection(const RectF<VEC>& r) {
+		void DoIntersection(const RectI<VEC>& r) {
 			*this = Intersection(r);
 		}
 

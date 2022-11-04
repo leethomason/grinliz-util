@@ -16,6 +16,11 @@ IString::IString()
 	str = StringPool::EmptyStr().c_str();
 }
 
+IString::IString(const char* c)
+{
+	str = StringPool::Intern(c).str;
+}
+
 void StringPool::Create() 
 {
 	emptyStr = Intern("");
@@ -57,11 +62,15 @@ IString StringPool::Intern(const char* str)
 {
 	std::scoped_lock<std::mutex> guard(poolMutex);
 	const char* p = InternInner(str, 0);
-	return IString(p);
+	IString istr;
+	istr.str = p;
+	return istr;
 }
 
 const char* StringPool::InternInner(const char* str, uint64_t* hashOut)
 {
+	if (!str) return nullptr;
+
 	size_t len = strlen(str);
 	GLASSERT(len <= STRINGPOOL_MAX_SIZE - STRINGPOOL_OVERHEAD);
 	uint64_t h = SpookyHash::Hash64(str, len, HASH_SEED);

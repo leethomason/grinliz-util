@@ -24,12 +24,23 @@ class IString
 
 public:
 	IString();
+	IString(const char*);
+	IString(const IString& rhs) { str = rhs.str; }
+	IString(IString&& rhs) noexcept { str = rhs.str; }
+	IString& operator=(const IString& rhs) { str = rhs.str; return *this; }
+	IString& operator=(IString&& rhs) noexcept { str = rhs.str; return *this; }
+
+	~IString() = default;
 
 	const char* c_str() const { return str; }
 	intptr_t IntPtr() const { return (intptr_t)str; }
 
 	bool operator==(const IString& rhs) const { return str == rhs.str; }
 	bool operator==(const char* p) const { return strcmp(str, p) == 0; }
+	bool operator!=(const IString& rhs) const { return !(rhs == *this); }
+	bool operator!=(const char* p) const { return !(*this == p); }
+
+	bool operator<(const IString& rhs) const { return strcmp(str, rhs.str) < 0; }
 
 	int Length() const {
 		return *(str - 2) * 256 + *(str - 1);
@@ -38,8 +49,6 @@ public:
 	bool Empty() const { return Length() == 0; }
 
 private:
-	IString(const char* p) : str(p) {}
-
 	const char* str;
 };
 

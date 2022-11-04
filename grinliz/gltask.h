@@ -15,7 +15,7 @@ namespace grinliz {
             // Call base class OnDependenciesComplete BEFORE deleting depedent task or self
             ICompletable::OnDependenciesComplete(pTaskScheduler_, threadNum_);
 
-            printf("CompletionActionDelete::OnDependenciesComplete called on thread %u\n", threadNum_);
+            //printf("CompletionActionDelete::OnDependenciesComplete called on thread %u\n", threadNum_);
 
             // In this example we delete the dependency, which is safe to do as the task
             // manager will not dereference it at this point.
@@ -37,7 +37,7 @@ namespace grinliz {
         }
 
         virtual ~SelfDeletingTask() {
-            printf("SelfDeletingTask deleted\n");
+            //printf("SelfDeletingTask deleted\n");
         }
     };
 
