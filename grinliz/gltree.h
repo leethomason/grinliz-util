@@ -5,8 +5,6 @@
 #include "glrectangle.h"
 #include "glcontainer.h"	// sort: move to own header?
 
-#define USE_PARTITION() 1
-
 namespace grinliz {
 	bool TreeTest();
 
@@ -17,18 +15,19 @@ namespace grinliz {
 	{
 		friend bool TreeTest();
 		using V = typename R::Vec_t;
+		using Num_t = typename R::Num_t;
 
 	public:
 		struct Data {
 			V pos;
-			T key;
+			T value;
 		};
 
 		struct Node {
 			int start = 0;
 			int count = 0;
 			int splitAxis = -1;
-			float splitValue = 0;
+			Num_t splitValue = 0;
 			R bounds;
 
 			bool Leaf() const { return splitAxis < 0; }
@@ -101,7 +100,7 @@ namespace grinliz {
 
 		int FindSplitAxis(const Node* node) const {
 			int splitAxis = -1;
-			float size = 0.0;
+			Num_t size = 0;
 			for (int i = 0; i < V::length(); ++i) {
 				if (node->bounds.size[i] > size) {
 					splitAxis = i;
@@ -130,7 +129,6 @@ namespace grinliz {
 			Data* end = start + node->count;
 
 			// Sort the data on the splitting axis.
-#if USE_PARTITION()
 			node->splitValue = node->bounds.Center()[node->splitAxis];
 			
 			/* Using the mean - over the center - actually slows down the Query (??)
@@ -145,25 +143,6 @@ namespace grinliz {
 				return a.pos[ax] < v;
 				});
 
-#else
-#if false
-			// About 6ms @10k
-			grinliz::Sort(start, node->count, [ax = node->splitAxis](const Data& a, const Data& b) {
-				return a.p[ax] < b.p[ax];
-				});
-#endif
-			// About 4ms @10k
-			std::sort(start, end, [ax = node->splitAxis](const Data& a, const Data& b) {
-				return a.pos[ax] < b.pos[ax];
-				});
-
-			// Choose the median split value. Note it is possible this 
-			// creates a pathelogical case, where there is only 1 data
-			// in a node. (Or possibly - with numerical issues - 0?). But
-			// it won't break, and this is clearly intended to work 
-			// with a distribution.
-			node->splitValue = start[node->count / 2].pos[node->splitAxis];
-#endif
 			*left = Node();
 			*right = Node();
 			Data* p = start;
