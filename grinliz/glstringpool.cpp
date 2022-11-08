@@ -69,6 +69,8 @@ IString StringPool::Intern(const char* str)
 
 const char* StringPool::InternInner(const char* str, uint64_t* hashOut)
 {
+	if (!str) return nullptr;
+
 	size_t len = strlen(str);
 	GLASSERT(len <= STRINGPOOL_MAX_SIZE - STRINGPOOL_OVERHEAD);
 	uint64_t h = SpookyHash::Hash64(str, len, HASH_SEED);
