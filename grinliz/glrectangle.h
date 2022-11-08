@@ -121,6 +121,16 @@ namespace grinliz
 			return true;
 		}
 
+		bool IntersectsIncl(const RectF<VEC>& r) const {
+			for (int i = 0; i < VEC::length(); ++i) {
+				if (r.pos[i] + r.size[i] < pos[i])
+					return false;
+				if (r.pos[i] > pos[i] + size[i])
+					return false;
+			}
+			return true;
+		}
+
 		bool Contains(const RectF<VEC>& a) const {
 			if (glm::all(glm::greaterThanEqual(a.Lower(), Lower())) && glm::all(glm::lessThanEqual(a.Upper(), Upper())))
 				return true;
@@ -201,12 +211,11 @@ namespace grinliz
 
 			if (pos.x == INT_MIN) {
 				pos = p;
-				size = VEC(1);
 			}
 			else {
 				VEC upper = Upper();
 				pos = glm::min(pos, p);
-				size = glm::max(upper, p + VEC(1)) - pos;
+				size = glm::max(upper, p) - pos;
 			}
 		}
 
@@ -274,6 +283,16 @@ namespace grinliz
 				if (r.pos[i] + r.size[i] < pos[i])
 					return false;
 				if (r.pos[i] >= pos[i] + size[i])
+					return false;
+			}
+			return true;
+		}
+
+		bool IntersectsIncl(const RectI<VEC>& r) const {
+			for (int i = 0; i < VEC::length(); ++i) {
+				if (r.pos[i] + r.size[i] < pos[i])
+					return false;
+				if (r.pos[i] > pos[i] + size[i])
 					return false;
 			}
 			return true;

@@ -8,7 +8,7 @@
 
 int main()
 {
-	//grinliz::TestContainers();
+	grinliz::TestContainers();
 	grinliz::ConsumerProducerQueueTest(clock());
 	grinliz::TestRect();
 	grinliz::TestIntersect();

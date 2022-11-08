@@ -166,9 +166,11 @@ namespace grinliz {
 			const Node* left = Child(node, LEFT);
 			const Node* right = Child(node, RIGHT);
 
-			if (left && left->bounds.Intersects(rect))
+			// Note the use of IntersectsIncl so that we don't miss
+			// a right edge node.
+			if (left && left->bounds.IntersectsIncl(rect))
 				QueryRec(rect, r, left);
-			if (right && right->bounds.Intersects(rect))
+			if (right && right->bounds.IntersectsIncl(rect))
 				QueryRec(rect, r, right);
 
 			if (node->Leaf()) {
