@@ -44,7 +44,7 @@ namespace grinliz {
     class JobHandle {
     public:
         JobHandle() {}
-        JobHandle(enki::TaskScheduler* pool, enki::ITaskSet* task, bool deleteTask=true) : _deleteTask(deleteTask), _task(task), _pool(pool) {}
+        JobHandle(enki::TaskScheduler* pool, enki::ICompletable* task, bool deleteTask=true) : _deleteTask(deleteTask), _task(task), _pool(pool) {}
         ~JobHandle() {
             Complete();
         }
@@ -60,7 +60,7 @@ namespace grinliz {
         }
     private:
         bool _deleteTask = true;
-        enki::ITaskSet* _task = nullptr;
+        enki::ICompletable* _task = nullptr;
         enki::TaskScheduler* _pool = nullptr;
     };
 }

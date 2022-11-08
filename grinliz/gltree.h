@@ -15,18 +15,19 @@ namespace grinliz {
 	{
 		friend bool TreeTest();
 		using V = typename R::Vec_t;
+		using Num_t = typename R::Num_t;
 
 	public:
 		struct Data {
-			V p;
-			T t;
+			V pos;
+			T value;
 		};
 
 		struct Node {
 			int start = 0;
 			int count = 0;
 			int splitAxis = -1;
-			float splitValue = 0;
+			Num_t splitValue = 0;
 			R bounds;
 
 			bool Leaf() const { return splitAxis < 0; }
@@ -99,7 +100,7 @@ namespace grinliz {
 
 		int FindSplitAxis(const Node* node) const {
 			int splitAxis = -1;
-			float size = 0.0;
+			Num_t size = 0;
 			for (int i = 0; i < V::length(); ++i) {
 				if (node->bounds.size[i] > size) {
 					splitAxis = i;
@@ -128,36 +129,32 @@ namespace grinliz {
 			Data* end = start + node->count;
 
 			// Sort the data on the splitting axis.
-#if false
-			// About 6ms @10k
-			grinliz::Sort(start, node->count, [ax = node->splitAxis](const Data& a, const Data& b) {
-				return a.p[ax] < b.p[ax];
+			node->splitValue = node->bounds.Center()[node->splitAxis];
+			
+			/* Using the mean - over the center - actually slows down the Query (??)
+			double total = 0;
+			for (const Data* d = start; d < end; ++d) {
+				total += d->pos[node->splitAxis];
+			}
+			double ave = total / (end - start);
+			node->splitValue = (float)ave;
+			*/
+			std::partition(start, end, [ax = node->splitAxis, v = node->splitValue](const Data& a) {
+				return a.pos[ax] < v;
 				});
-#endif
-			// About 4ms @10k
-			std::sort(start, end, [ax = node->splitAxis](const Data& a, const Data& b) {
-				return a.p[ax] < b.p[ax];
-				});
-
-			// Choose the median split value. Note it is possible this 
-			// creates a pathelogical case, where there is only 1 data
-			// in a node. (Or possibly - with numerical issues - 0?). But
-			// it won't break, and this is clearly intended to work 
-			// with a distribution.
-			node->splitValue = start[node->count / 2].p[node->splitAxis];
 
 			*left = Node();
 			*right = Node();
 			Data* p = start;
 
 			left->start = node->start;
-			for (; p < end && p->p[node->splitAxis] < node->splitValue; ++p) {
-				left->bounds.DoUnion(p->p);
+			for (; p < end && p->pos[node->splitAxis] < node->splitValue; ++p) {
+				left->bounds.DoUnion(p->pos);
 				left->count++;
 			}
 			right->start = int(p - &m_data[0]);
 			for (; p < end; ++p) {
-				right->bounds.DoUnion(p->p);
+				right->bounds.DoUnion(p->pos);
 				right->count++;
 			}
 			
@@ -169,14 +166,16 @@ namespace grinliz {
 			const Node* left = Child(node, LEFT);
 			const Node* right = Child(node, RIGHT);
 
-			if (left && left->bounds.Intersects(rect))
+			// Note the use of IntersectsIncl so that we don't miss
+			// a right edge node.
+			if (left && left->bounds.IntersectsIncl(rect))
 				QueryRec(rect, r, left);
-			if (right && right->bounds.Intersects(rect))
+			if (right && right->bounds.IntersectsIncl(rect))
 				QueryRec(rect, r, right);
 
 			if (node->Leaf()) {
 				for (int i = 0; i < node->count; ++i) {
-					if (rect.Contains(m_data[i + node->start].p)) {
+					if (rect.Contains(m_data[i + node->start].pos)) {
 						r.push_back(m_data[i + node->start]);
 					}
 				}

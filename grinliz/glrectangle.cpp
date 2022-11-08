@@ -55,6 +55,24 @@ bool RectF<glm::vec2>::Contains(const glm::vec2& a) const {
 void grinliz::TestRect()
 {
 	{
+		// Bounds Madness!!!
+		{
+			Rect2F r;
+			r.DoUnion({ 0, 0 });
+			GLASSERT(r.size == glm::vec2(0));
+			r.DoUnion({ 1, 1 });
+			GLASSERT(r.size == glm::vec2(1));
+		}	
+		{
+			Rect2I r;
+			r.DoUnion({ 0, 0 });
+			GLASSERT(r.size == glm::ivec2(0));
+			r.DoUnion({ 1, 1 });
+			GLASSERT(r.size == glm::ivec2(1));
+		}
+	}
+
+	{
 		Rect3F rn1(glm::vec3(-1, 0, 0), glm::vec3(1, 1, 1));
 		Rect3F r0(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1));
 		Rect3F r1(glm::vec3(1, 0, 0), glm::vec3(1, 1, 1));

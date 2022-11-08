@@ -11,6 +11,7 @@ namespace grinliz
 	struct RectF {
 
 		using Vec_t = typename VEC;
+		using Num_t = float;
 
 		RectF() {
 			pos = VEC{ FLT_MIN };
@@ -120,6 +121,16 @@ namespace grinliz
 			return true;
 		}
 
+		bool IntersectsIncl(const RectF<VEC>& r) const {
+			for (int i = 0; i < VEC::length(); ++i) {
+				if (r.pos[i] + r.size[i] < pos[i])
+					return false;
+				if (r.pos[i] > pos[i] + size[i])
+					return false;
+			}
+			return true;
+		}
+
 		bool Contains(const RectF<VEC>& a) const {
 			if (glm::all(glm::greaterThanEqual(a.Lower(), Lower())) && glm::all(glm::lessThanEqual(a.Upper(), Upper())))
 				return true;
@@ -161,6 +172,7 @@ namespace grinliz
 	struct RectI {
 
 		using Vec_t = typename VEC;
+		using Num_t = int;
 
 		RectI() {
 			pos = VEC{ INT_MIN };
@@ -187,7 +199,7 @@ namespace grinliz
 
 		bool IsValid() const { return pos.x != INT_MIN; }
 
-		void Outset(float x) {
+		void Outset(int x) {
 			pos.x -= VEC{ x };
 			size.x += 2 * VEC{ x };
 		}
@@ -207,31 +219,28 @@ namespace grinliz
 			}
 		}
 
-		void DoUnion(const RectF<VEC>& r) {
+		void DoUnion(const RectI<VEC>& r) {
 			DoUnion(r.pos);
 			DoUnion(r.pos + r.size);
 		}
 
-		RectF<VEC> Intersection(const RectF<VEC>& r) const {
-			for (int i = 0; i < VEC::length; ++i) {
+		RectI<VEC> Intersection(const RectI<VEC>& r) const {
+			for (int i = 0; i < VEC::length(); ++i) {
 				GLASSERT(size[i] >= 0);
 			}
 
-			VEC low = glm::min(pos + size, r.pos + r.size);
-			VEC high = glm::max(pos, r.pos);
+			VEC low = glm::max(pos, r.pos);
+			VEC high = glm::min(Upper(), r.Upper());
 			VEC sz = high - low;
 
-			VEC out{ 0 };
 			for (int i = 0; i < VEC::length(); ++i) {
 				if (sz[i] < 0)
-					return out;
+					return RectI<VEC>();
 			}
-			out.pos = low;
-			out.size = sz;
-			return out;
+			return { low, sz };
 		}
 
-		void DoIntersection(const RectF<VEC>& r) {
+		void DoIntersection(const RectI<VEC>& r) {
 			*this = Intersection(r);
 		}
 
@@ -246,6 +255,7 @@ namespace grinliz
 
 		const VEC& Lower() const { return pos; }
 		VEC Upper() const { return pos + size; }
+		VEC Center() const { return pos + size / 2; }
 
 		// Area, if 2D
 		int Volume() const {
@@ -258,7 +268,7 @@ namespace grinliz
 
 		int MajorAxis() const {
 			int axis = 0;
-			float s = size.x;
+			int s = size.x;
 			for (int i = 1; i < VEC::length(); ++i) {
 				if (size[i] > s) {
 					s = size[i];
@@ -268,7 +278,7 @@ namespace grinliz
 			return axis;
 		}
 
-		bool Intersects(const RectF<VEC>& r) const {
+		bool Intersects(const RectI<VEC>& r) const {
 			for (int i = 0; i < VEC::length(); ++i) {
 				if (r.pos[i] + r.size[i] < pos[i])
 					return false;
@@ -278,7 +288,17 @@ namespace grinliz
 			return true;
 		}
 
-		bool Contains(const RectF<VEC>& a) const {
+		bool IntersectsIncl(const RectI<VEC>& r) const {
+			for (int i = 0; i < VEC::length(); ++i) {
+				if (r.pos[i] + r.size[i] < pos[i])
+					return false;
+				if (r.pos[i] > pos[i] + size[i])
+					return false;
+			}
+			return true;
+		}
+
+		bool Contains(const RectI<VEC>& a) const {
 			if (glm::all(glm::greaterThanEqual(a.Lower(), Lower())) && glm::all(glm::lessThanEqual(a.Upper(), Upper())))
 				return true;
 			return false;
