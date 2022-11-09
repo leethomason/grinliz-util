@@ -3,7 +3,7 @@
 using namespace grinliz;
 
 template<>
-bool RectF<glm::vec3>::Intersects(const RectF<glm::vec3>& r) const {
+bool Rect<glm::vec3, float>::Intersects(const Rect<glm::vec3, float>& r) const {
 	if (r.pos.x + r.size.x <= pos.x)
 		return false;
 	if (r.pos.y + r.size.y <= pos.y)
@@ -20,7 +20,7 @@ bool RectF<glm::vec3>::Intersects(const RectF<glm::vec3>& r) const {
 }
 
 template<>
-bool RectF<glm::vec2>::Intersects(const RectF<glm::vec2>& r) const {
+bool Rect<glm::vec2, float>::Intersects(const Rect<glm::vec2, float>& r) const {
 	if (r.pos.x + r.size.x <= pos.x)
 		return false;
 	if (r.pos.y + r.size.y <= pos.y)
@@ -33,7 +33,7 @@ bool RectF<glm::vec2>::Intersects(const RectF<glm::vec2>& r) const {
 }
 
 template<>
-bool RectF<glm::vec3>::Contains(const glm::vec3& a) const {
+bool Rect<glm::vec3, float>::Contains(const glm::vec3& a) const {
 	if ((a.x < pos.x) || a.x >= (pos.x + size.x))
 		return false;
 	if ((a.y < pos.y) || a.y >= (pos.y + size.y))
@@ -44,7 +44,7 @@ bool RectF<glm::vec3>::Contains(const glm::vec3& a) const {
 }
 
 template<>
-bool RectF<glm::vec2>::Contains(const glm::vec2& a) const {
+bool Rect<glm::vec2, float>::Contains(const glm::vec2& a) const {
 	if ((a.x < pos.x) || a.x >= (pos.x + size.x))
 		return false;
 	if ((a.y < pos.y) || a.y >= (pos.y + size.y))
