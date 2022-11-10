@@ -29,6 +29,14 @@ namespace grinliz
 			}
 		}
 
+		bool operator==(const Rect<VEC, NUM>& rhs) const {
+			return pos == rhs.pos && size == rhs.size;
+		}
+
+		bool operator!=(const Rect<VEC, NUM>& rhs) const {
+			return !(*this == rhs);
+		}
+
 		bool IsValid() const { return pos.x != kInvalid; }
 
 		void Outset(float x) {
@@ -57,22 +65,19 @@ namespace grinliz
 		}
 
 		Rect<VEC, NUM> Intersection(const Rect<VEC, NUM>& r) const {
-			for (int i = 0; i < VEC::length; ++i) {
+			for (int i = 0; i < VEC::length(); ++i) {
 				GLASSERT(size[i] >= 0);
 			}
 
-			VEC low = glm::min(pos + size, r.pos + r.size);
-			VEC high = glm::max(pos, r.pos);
+			VEC low = glm::max(pos, r.pos);
+			VEC high = glm::min(Upper(), r.Upper());
 			VEC sz = high - low;
 
-			VEC out{ 0 };
 			for (int i = 0; i < VEC::length(); ++i) {
 				if (sz[i] < 0)
-					return out;
+					return Rect<VEC, NUM>();
 			}
-			out.pos = low;
-			out.size = sz;
-			return out;
+			return { low, sz };
 		}
 
 		void DoIntersection(const Rect<VEC, NUM>& r) {
@@ -108,7 +113,7 @@ namespace grinliz
 			a->pos = b->pos = pos;
 			a->size = b->size = size;
 				
-			a->size[axis] = b->size[axis] = size[axis] * 0.5f;
+			a->size[axis] = b->size[axis] = size[axis] / NUM(2);
 			b->pos[axis] = pos[axis] + a->size[axis];
 		}
 
@@ -144,6 +149,14 @@ namespace grinliz
 			if (glm::any(glm::greaterThanEqual(a, pos + size)))
 				return false;
 			return true;
+		}
+
+		NUM Volume() const {
+			NUM v = size[0];
+			for (int i = 1; i < VEC::length(); ++i) {
+				v *= size[i];
+			}
+			return v;
 		}
 
 		VEC pos;
