@@ -67,7 +67,7 @@ namespace grinliz {
 	}
 
 	template<typename T> T HashCombine(T a, T b) {
-		return a ^ Rotate(b, sizeof(T) / 3);
+		return b + 0x9e3779b9 + (a << 6) + (a >> 2);
 	}
 
 	template<typename T>
