@@ -8,6 +8,13 @@
 
 namespace grinliz 
 {
+	// General rectangle type.
+	// The lower ("left") edge is inclusive, the upper ("right") edge is exclusive.
+	// The rectangle is default constructed to an Invalid state. You can query whether it has become valid
+	//    (through values being set or with DoUnion()) by calling IsValid().
+	// Note that when doing unions with points, this behavior is correct but odd; see IntersectsIncl() to help.
+	// typenames for Rect2I, Rect2F, Rect3I, and Rect3F are provided. But should work for any
+	//    glm-compatible VEC with value type NUM.
 	template<typename VEC, typename NUM>
 	struct Rect {
 
@@ -151,6 +158,7 @@ namespace grinliz
 			return true;
 		}
 
+		// Length, Area, or Volume depending on the dimension
 		NUM Volume() const {
 			NUM v = size[0];
 			for (int i = 1; i < VEC::length(); ++i) {

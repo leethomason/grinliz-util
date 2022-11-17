@@ -143,6 +143,23 @@ namespace grinliz {
             }
         }
 
+        static uint32_t Mix(uint32_t a) {
+            // https://burtleburtle.net/bob/hash/integer.html
+            a -= (a << 6);
+            a ^= (a >> 17);
+            a -= (a << 9);
+            a ^= (a << 4);
+            a -= (a << 3);
+            a ^= (a << 10);
+            a ^= (a >> 15);
+            return a;
+        }
+
+        static double MixUniform(uint32_t a) {
+            static const double INV = 1.0 / 65535;
+            return (Mix(a) & 0xffff) * INV;
+        }
+
     private:
         uint32_t x;
     };
