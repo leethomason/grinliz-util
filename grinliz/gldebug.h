@@ -40,7 +40,9 @@ distribution.
 #	if defined(_MSC_VER)
 #		if _WIN64
 #include <assert.h>
-			#define GLASSERT assert
+			// #define GLASSERT assert
+			void WinDebugBreak();
+#			define GLASSERT(x)		if (!(x)) WinDebugBreak();
 		#else
 			void WinDebugBreak();		
 #			define GLASSERT( x )		if (!(x)) WinDebugBreak(); //if ( !(x)) { _asm { int 3 } }
