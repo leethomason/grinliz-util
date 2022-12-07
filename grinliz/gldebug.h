@@ -38,18 +38,11 @@ distribution.
 
 #if defined(DEBUG)
 #	if defined(_MSC_VER)
-#		if _WIN64
-#include <assert.h>
-			// #define GLASSERT assert
-			void WinDebugBreak();
-#			define GLASSERT(x)		if (!(x)) WinDebugBreak();
-		#else
-			void WinDebugBreak();		
-#			define GLASSERT( x )		if (!(x)) WinDebugBreak(); //if ( !(x)) { _asm { int 3 } }
-#		endif
-		#define GLOUTPUT( x )		printf x
-		#define GLOUTPUT_REL( x )	printf x
-	#elif defined (ANDROID_NDK)
+		void WinDebugBreak();
+#		define GLASSERT(x)		if (!(x)) WinDebugBreak();
+#		define GLOUTPUT( x )		printf x
+#		define GLOUTPUT_REL( x )	printf x
+#	elif defined (ANDROID_NDK)
 		#include <android/log.h>
 		void dprintf( const char* format, ... );
 		#define GLASSERT( x )		if ( !(x)) { __android_log_assert( "assert", "grinliz", "ASSERT in '%s' at %d.", __FILE__, __LINE__ ); }
